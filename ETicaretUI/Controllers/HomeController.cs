@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics;
 using Dal.Abstract;
-using Data.Entities;
 using Data.ViewModels;
-using Microsoft.AspNetCore.Mvc;
 using ETicaretUI.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaretUI.Controllers;
 
@@ -12,9 +11,7 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly ICategoryDal _categoryDal;
     private readonly IProductDal _productDal;
-    
 
-  
 
     public HomeController(ILogger<HomeController> logger, ICategoryDal categoryDal, IProductDal productDal)
     {
@@ -23,10 +20,10 @@ public class HomeController : Controller
         _productDal = productDal;
     }
 
-    
+
     public IActionResult Index()
     {
-        var product  = _productDal.GetAll(x=>x.IsHome&& x.IsApproved);
+        var product = _productDal.GetAll(x => x.IsHome && x.IsApproved);
         return View(product);
     }
 
@@ -34,10 +31,10 @@ public class HomeController : Controller
     {
         //category ve productları aynı sayfada göreceğiz
         ViewBag.id = id;
-        var product = _productDal.GetAll(x=>x.IsApproved);
+        var product = _productDal.GetAll(x => x.IsApproved);
         if (id != null)
         {
-            product = product.Where(x=>x.CategoryId==id).ToList();
+            product = product.Where(x => x.CategoryId == id).ToList();
         }
 
         var models = new ListViewModel()
@@ -47,7 +44,12 @@ public class HomeController : Controller
         };
         return View(models);
     }
-    
+
+    public IActionResult Details(int id)
+    {
+        var product = _productDal.Get(id);
+        return View(product);
+    }
 
     public IActionResult Privacy()
     {

@@ -1,5 +1,4 @@
-@model System.Collections.Generic.IEnumerable<Data.Entities.Product>
-@using Data.Entities
+@model IEnumerable<Data.Entities.Product>
 
 @foreach (var item in Model)
 {
@@ -15,7 +14,7 @@
             </div>
             <div class="card-footer">
                 <small class="text-muted">@item.Price.ToString("C")</small>
-                <a class="btn btn-dark btn-sm float-end" href="/Home/DetailsF/@item.ProductId">
+                <a class="btn btn-dark btn-sm float-end" href="/Home/Details/@item.ProductId">
                     <i class="fa-solid fa-angeles-right"></i>
                     Ürün Detay
                 </a>
