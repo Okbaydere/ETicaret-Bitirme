@@ -1,4 +1,5 @@
 using Dal.Abstract;
+using Data.Entities;
 using Data.Helpers;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -41,7 +42,7 @@ public class CardController : Controller
         else
         {
             var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-            int index = isExist(card, id);
+            int index = IsExist(card, id);
             if (index < 0)
             {
                 card.Add(new CardItem { Product = _productDal.Get(id), Quantity = 1 });
@@ -57,7 +58,59 @@ public class CardController : Controller
         return RedirectToAction("Index");
     }
 
-    private int isExist(List<CardItem> card, int id)
+    public IActionResult Checkout()
+    {
+        return View(new ShippingDetails());
+    }
+
+    [HttpPost]
+    public IActionResult Checkout(ShippingDetails details)
+    {
+        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
+        if (card == null)
+        {
+            ModelState.AddModelError("Ürün Yok", "Sepetinizde Ürün yok");
+        }
+
+        if (ModelState.IsValid)
+        {
+            SaveOrder(card, details);
+            card.Clear();
+            SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+        }
+
+        return View(details);
+    }
+
+    private void SaveOrder(List<CardItem>? card, ShippingDetails details)
+    {
+        var guid = Guid.Empty.ToString("N");
+        var order = new Order();
+        order.OrderNumber = guid;
+        order.Total = card.Sum(x => x.Product.Price * x.Quantity);
+        order.OrderDate = DateTime.Now;
+        order.OrderState = EnumOrderState.Waiting;
+        order.UserName = details.UserName;
+        order.Address = details.Address;
+        order.City = details.City;
+        order.AddressTitle = details.AddressTitle;
+        order.OrderLines = new List<OrderLine>();
+        // order.OrderNumber = "A" + (new Random()).Next(1111,9999);
+        foreach (var item in card)
+        {
+            var orderLine = new OrderLine();
+            orderLine.Quantity = item.Quantity;
+            orderLine.ProductId = item.Product.ProductId;
+            order.OrderLines.Add(orderLine);
+            orderLine.Price = item.Product.Price * item.Quantity;
+            _productDal.Update(item.Product);
+            ;
+        }
+
+        _orderDal.Add(order);
+    }
+
+    private int IsExist(List<CardItem> card, int id)
     {
         for (int i = 0; i < card.Count; i++)
         {
