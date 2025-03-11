@@ -1,0 +1,25 @@
+@model System.Collections.Generic.IEnumerable<Data.Entities.Product>
+@using Data.Entities
+
+@foreach (var item in Model)
+{
+    <div class="col">
+        <div class="card h-75">
+            <img src="@item.Image" alt=""/>
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="/Home/Details/@item.ProductId"></a>
+                    @item.Name
+                </h5>
+                <p class="card-text">@item.Description</p>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">@item.Price.ToString("C")</small>
+                <a class="btn btn-dark btn-sm float-end" href="/Home/DetailsF/@item.ProductId">
+                    <i class="fa-solid fa-angeles-right"></i>
+                    Ürün Detay
+                </a>
+            </div>
+        </div>
+    </div>
+}

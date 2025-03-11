@@ -1,0 +1,25 @@
+﻿@using Data.Entities
+@model IEnumerable<Product>
+@{
+    ViewData["Title"] = "Home Page";
+}
+<header>
+    <div class="container py-2">
+        <h1>ETicaret Sitesi</h1>
+        <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maxime molestiae nulla tempore! Dolorem eligendi
+            nostrum vero. Amet aut dignissimos inventore officia omnis quod repellendus tenetur! Consequatur delectus
+            quidem repellat sint.
+        </div>
+        <div>Corporis cum dolore earum error, exercitationem, laborum, magni maiores minus nemo nobis quaerat
+            reprehenderit vel veniam! Asperiores delectus expedita iste maiores! Amet ea eveniet fuga ipsam quibusdam
+            quidem sit voluptatibus?
+        </div>
+        <div>Culpa, fugit illo ipsa maiores necessitatibus, nemo nesciunt optio porro reprehenderit rerum sapiente
+            veniam veritatis voluptatibus! Deleniti dicta eius modi molestiae, natus quisquam quod reprehenderit
+            suscipit vitae. Error obcaecati, quia!
+        </div>
+    <div class="row row-cols-1 row-cols-md2 g-4">
+        @Html.Partial("_ProductList",Model)
+    </div>
+    </div>
+</header>

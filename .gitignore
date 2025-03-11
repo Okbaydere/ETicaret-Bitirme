@@ -1,0 +1,80 @@
+## ASP.NET Core .gitignore
+
+# Visual Studio ve .NET Core geçici dosyaları
+bin/
+obj/
+.vs/
+.vscode/
+**/*.csproj.user
+*.suo
+*.userprefs
+
+# Derleme çıktıları
+*.dll
+*.exe
+*.pdb
+*.dll.config
+*.exe.config
+
+# NuGet paketleri
+packages/
+*.nupkg
+
+# Entity Framework Core geçici dosyaları
+*.dbmdl
+*.dbproj.schemaview
+
+# Ortam dosyaları
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+.env
+.env.*
+
+# IIS geçici dosyaları
+*.pubxml
+*.tmp
+*.tmp_proj
+
+# Diğer geçici dosyalar
+_ReSharper.*
+*.resharper
+*.sln.docstates
+*.user
+*.vspscc
+*.vssscc
+.build/
+*.pidb
+*.svclog
+*.xap
+*.xcuserstate
+*.xib
+
+# macOS/Linux geçici dosyaları
+.DS_Store
+Thumbs.db
+
+# Log dosyaları
+*.log
+*.log.*
+
+# Test sonuçları
+TestResults/
+coverage/
+lcov.info
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+**/Dockerfile.*
+
+# Diğer
+*.bak
+*.cache
+*.orig
+*.rej
+*~
+~*
+*.swp
+.project
+.idea/
