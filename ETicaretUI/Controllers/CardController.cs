@@ -67,10 +67,11 @@ public class CardController : Controller
     public IActionResult Checkout(ShippingDetails details)
     {
         var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-        if (card == null)
+        if (card.Count == 0 || card == null)
         {
             ModelState.AddModelError("Ürün Yok", "Sepetinizde Ürün yok");
         }
+
 
         if (ModelState.IsValid)
         {
@@ -109,6 +110,24 @@ public class CardController : Controller
 
         _orderDal.Add(order);
     }
+
+
+    public IActionResult Delete(int id)
+    {
+        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
+        int index = IsExist(card, id);
+        card[index].Quantity--;
+        if (card[index].Quantity == 0)
+        {
+            card.RemoveAt(index);
+        }
+
+        SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+
+
+        return RedirectToAction("Index");
+    }
+
 
     private int IsExist(List<CardItem> card, int id)
     {

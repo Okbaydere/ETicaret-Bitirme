@@ -1,4 +1,4 @@
-
+@* @model Data.ViewModels.CardViewModel *@
 @model IEnumerable<Data.ViewModels.CardItem>
 @{
     Layout = "_Layout";
@@ -40,8 +40,15 @@ else
                 <td>@item.Quantity</td>
                 <td>@((item.Product.Price * item.Quantity).ToString("c"))</td>
                 <td>
-                    <a class="btn btn-danger" asp-action="Remove" asp-route-id="@item.Product.ProductId">Remove</a>
+                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Product.ProductId">Remove</a>
                 </td>
+                <td>
+                    @* <a asp-action="Buy" asp-controller="Card" asp-route-id="@Model.Pro" class="btn btn-success"> *@
+                    @*     <i class="fa-solid fa-cart-plus"></i> *@
+                    @*     <span class="badge">Add To Cart</span> *@
+                    @* </a> *@
+                </td>
+
             </tr>
         }
 
