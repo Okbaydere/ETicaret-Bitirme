@@ -29,19 +29,25 @@ public class UserController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> RoleAssign(int userId)
+    public async Task<IActionResult> RoleAssign(int id)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(id.ToString());
+
+        if (user == null)
+        {
+            return NotFound($"Kullanıcı bulunamadı. ID: {id}");
+        }
+
         var roles = _roleManager.Roles.Where(x => x.Name != "Admin").ToList();
         var userRoles = await _userManager.GetRolesAsync(user);
-        var RoleAssigned = new List<RoleAssignModel>();
-        roles.ForEach(role => RoleAssigned.Add(new RoleAssignModel
+        var roleAssigned = new List<RoleAssignModel>();
+        roles.ForEach(role => roleAssigned.Add(new RoleAssignModel
         {
             HasAssigned = userRoles.Contains(role.Name),
             Id = role.Id,
             Name = role.Name,
         }));
-        return View();
+        return View(roleAssigned);
     }
 
     [HttpPost]
