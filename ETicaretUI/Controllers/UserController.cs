@@ -51,9 +51,9 @@ public class UserController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> RoleAssign(List<RoleAssignModel> models, int userId)
+    public async Task<IActionResult> RoleAssign(List<RoleAssignModel> models, int id)
     {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
+        var user = await _userManager.FindByIdAsync(id.ToString());
         foreach (var role in models)
         {
             if (role.HasAssigned)
@@ -67,5 +67,17 @@ public class UserController : Controller
         }
 
         return RedirectToAction("Index");
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var user = await _userManager.FindByIdAsync(id.ToString());
+        var sonuc = await _userManager.DeleteAsync(user);
+        if (sonuc.Succeeded)
+        {
+            return RedirectToAction("Index");
+        }
+
+        return NotFound("Bulunamadı");
     }
 }
