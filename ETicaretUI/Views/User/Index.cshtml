@@ -1,0 +1,26 @@
+@model List<Data.Identity.AppUser>
+@{
+    Layout = "_Layout";
+}
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>SurName</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.FirstName</td>
+            <td>@item.LastName</td>
+            <td>
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                <a asp-action="RoleAssign" asp-route-id="@item.Id">Role Assignment</a>
+            </td>
+
+        </tr>
+    }
+    </tbody>
+</table>
