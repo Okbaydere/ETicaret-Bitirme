@@ -43,4 +43,42 @@ public class RolesController : Controller
 
         return View(role);
     }
+
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var role = await _roleManager.FindByIdAsync(id.ToString());
+        return View(role);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(AppRole model)
+    {
+        var role = await _roleManager.FindByIdAsync(model.Id.ToString());
+        role.Name = model.Name;
+        role.NormalizedName = model.Name.ToUpper();
+        var result = await _roleManager.UpdateAsync(role);
+        if (result.Succeeded)
+        {
+            return RedirectToAction("Index");
+        }
+
+        return View(model);
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var role = await _roleManager.FindByIdAsync(id.ToString());
+        var result = await _roleManager.DeleteAsync(role);
+        if (result.Succeeded)
+        {
+            return RedirectToAction("Index");
+        }
+        else
+        {
+            return NotFound();
+        }
+
+        return View(role);
+    }
 }
