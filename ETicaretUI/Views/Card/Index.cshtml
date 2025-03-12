@@ -63,5 +63,8 @@ else
 }
 <div class="w-75">
     <a asp-action="List" asp-controller="Home" class="float-start">Alışverişe devam et</a>
-    <a asp-action="CheckOut" asp-controller="Card" class="float-end">Alışverişe Tamamla</a>
+    @if (Model != null && Model.Any())
+    {
+        <a asp-action="CheckOut" asp-controller="Card" class="float-end">Alışverişi Tamamla</a>
+    }
 </div>

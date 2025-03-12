@@ -60,6 +60,12 @@ public class CardController : Controller
 
     public IActionResult Checkout()
     {
+        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
+        if (card.Count == 0 || card == null)
+        {
+            ModelState.AddModelError("Ürün Yok", "Sepetinizde Ürün yok");
+        }
+
         return View(new ShippingDetails());
     }
 
