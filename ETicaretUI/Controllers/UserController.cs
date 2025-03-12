@@ -78,6 +78,6 @@ public class UserController : Controller
             return RedirectToAction("Index");
         }
 
-        return NotFound("Bulunamadı");
+        return NotFound("Silme İşlemi Başarısız");
     }
 }
