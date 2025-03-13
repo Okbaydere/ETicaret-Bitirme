@@ -7,6 +7,6 @@ namespace ETicaretUI.Models.ViewModels
         public int Id { get; set; }
         public string CategoryName { get; set; }
         public string Description { get; set; }
-        public int ProductCount { get; set; } // Kategori altındaki ürün sayısı
+        public int ProductCount { get; set; }
     }
 }

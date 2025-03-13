@@ -10,7 +10,6 @@ namespace ETicaretUI.Controllers;
 public class CategoryController : Controller
 {
     private readonly ETicaretContext _context;
-
     private readonly ICategoryDal _categoryDal;
     private readonly IProductDal _productDal;
 
@@ -24,13 +23,13 @@ public class CategoryController : Controller
     public IActionResult Index()
     {
         var categories = _categoryDal.GetAll();
-        var categoryViewModels = new List<CategoryViewModel>();
+        var result = new List<CategoryViewModel>();
 
         foreach (var category in categories)
         {
             int productCount = _productDal.GetAll().Count(p => p.CategoryId == category.Id);
 
-            categoryViewModels.Add(new CategoryViewModel
+            result.Add(new CategoryViewModel
             {
                 Id = category.Id,
                 CategoryName = category.CategoryName,
@@ -39,7 +38,7 @@ public class CategoryController : Controller
             });
         }
 
-        return View(categoryViewModels);
+        return View(result);
     }
 
 
@@ -87,22 +86,9 @@ public class CategoryController : Controller
 
         if (ModelState.IsValid)
         {
-            try
-            {
-                _categoryDal.Update(category);
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoryExists(category.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            _context.Update(category);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         return View(category);

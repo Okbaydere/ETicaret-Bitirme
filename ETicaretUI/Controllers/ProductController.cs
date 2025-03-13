@@ -74,7 +74,6 @@ public class ProductController : Controller
         return NotFound();
     }
 
-    //POST
     [HttpPost]
     public async Task<IActionResult> Edit(int id,
         [Bind("ProductId,Name,CategoryId,Stock,Price,Image,IsHome,IsApproved")]
@@ -100,7 +99,6 @@ public class ProductController : Controller
         return View(product);
     }
 
-    // GET: Product/Details/5
     public IActionResult Details(int? id)
     {
         if (id == null)
