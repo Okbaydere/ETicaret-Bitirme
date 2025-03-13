@@ -91,7 +91,7 @@ public class CardController : Controller
 
     private void SaveOrder(List<CardItem>? card, ShippingDetails details)
     {
-        var guid = Guid.Empty.ToString("N");
+        var guid = Guid.NewGuid().ToString("N");
         var order = new Order();
         order.OrderNumber = guid;
         order.Total = card.Sum(x => x.Product.Price * x.Quantity);
