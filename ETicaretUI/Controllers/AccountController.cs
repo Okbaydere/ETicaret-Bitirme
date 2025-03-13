@@ -21,7 +21,7 @@ public class AccountController : Controller
 
     public IActionResult Login()
     {
-        if (User.Identity.IsAuthenticated != null)
+        if (User.Identity.IsAuthenticated == null)
         {
             return RedirectToAction("Index", "Home");
         }
@@ -56,16 +56,13 @@ public class AccountController : Controller
         return View(login);
     }
 
-
     public async Task<IActionResult> Index()
     {
-        // Eğer kullanıcı giriş yapmamışsa login sayfasına yönlendir
         if (!User.Identity.IsAuthenticated)
         {
             return RedirectToAction("Login");
         }
 
-        // Giriş yapmış kullanıcının bilgilerini getir
         var user = await _userManager.GetUserAsync(User);
 
         if (user == null)
@@ -73,17 +70,61 @@ public class AccountController : Controller
             return NotFound();
         }
 
-        // Kullanıcının rollerini getir
         var roles = await _userManager.GetRolesAsync(user);
 
-        // Görünüme aktarılacak bir model hazırla
         var model = new UserProfileViewModel
         {
             UserName = user.UserName,
             Email = user.Email,
             Roles = roles.ToList()
-            // İhtiyaca göre diğer kullanıcı bilgilerini de ekleyebilirsiniz
         };
+
+        return View(model);
+    }
+
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Login");
+    }
+
+    public IActionResult Register()
+    {
+        if (User.Identity.IsAuthenticated)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            var user = new AppUser
+            {
+                UserName = model.Username,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
+            var result = await _userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "User");
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+        }
 
         return View(model);
     }
