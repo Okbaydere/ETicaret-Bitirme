@@ -1,25 +1,28 @@
-﻿@using Data.Entities
-@model IEnumerable<Product>
+﻿@model IEnumerable<Data.Entities.Product>
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa | ETicaret";
 }
-<header>
-    <div class="container py-2">
-        <h1>ETicaret Sitesi</h1>
-        <div>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Maxime molestiae nulla tempore! Dolorem eligendi
-            nostrum vero. Amet aut dignissimos inventore officia omnis quod repellendus tenetur! Consequatur delectus
-            quidem repellat sint.
+
+<header class="bg-light py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="display-4 fw-bold text-primary">ETicaret Sitesi</h1>
+                <p class="lead text-muted">En yeni ve kaliteli ürünleri uygun fiyatlarla keşfedin.</p>
+                <hr class="my-4">
+                <p class="mb-4">Hızlı teslimat, güvenli alışveriş ve %100 müşteri memnuniyeti garantisi sunuyoruz.</p>
+            </div>
         </div>
-        <div>Corporis cum dolore earum error, exercitationem, laborum, magni maiores minus nemo nobis quaerat
-            reprehenderit vel veniam! Asperiores delectus expedita iste maiores! Amet ea eveniet fuga ipsam quibusdam
-            quidem sit voluptatibus?
-        </div>
-        <div>Culpa, fugit illo ipsa maiores necessitatibus, nemo nesciunt optio porro reprehenderit rerum sapiente
-            veniam veritatis voluptatibus! Deleniti dicta eius modi molestiae, natus quisquam quod reprehenderit
-            suscipit vitae. Error obcaecati, quia!
-        </div>
-    <div class="row row-cols-1 row-cols-md2 g-4">
-        @Html.Partial("_ProductList",Model)
-    </div>
     </div>
 </header>
+
+<section class="py-3" id="urunler">
+    <div class="container">
+        
+        <p class="text-center text-muted mb-5">Ürünler</p>
+
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            @await Html.PartialAsync("_ProductList", Model)
+        </div>
+    </div>
+</section>

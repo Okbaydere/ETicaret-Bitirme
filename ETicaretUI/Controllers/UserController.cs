@@ -1,10 +1,12 @@
 using Data.Identity;
 using Data.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaretUI.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class UserController : Controller
 {
     private readonly UserManager<AppUser> _userManager;

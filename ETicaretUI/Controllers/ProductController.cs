@@ -1,12 +1,14 @@
 using Dal.Abstract;
 using Data.Context;
 using Data.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace ETicaretUI.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class ProductController : Controller
 {
     private readonly ETicaretContext _context;
@@ -19,6 +21,7 @@ public class ProductController : Controller
         _productDal = productDal;
         _categoryDal = categoryDal;
     }
+
 
     public IActionResult Index()
     {

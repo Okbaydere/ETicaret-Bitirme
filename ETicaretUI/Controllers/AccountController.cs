@@ -1,5 +1,6 @@
 using Data.Identity;
 using Data.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -82,12 +83,6 @@ public class AccountController : Controller
         return View(model);
     }
 
-    public async Task<IActionResult> Logout()
-    {
-        await _signInManager.SignOutAsync();
-        return RedirectToAction("Login");
-    }
-
     public IActionResult Register()
     {
         if (User.Identity.IsAuthenticated)
@@ -97,6 +92,7 @@ public class AccountController : Controller
 
         return View();
     }
+
 
     [HttpPost]
     public async Task<IActionResult> Register(RegisterViewModel model)
@@ -127,5 +123,17 @@ public class AccountController : Controller
         }
 
         return View(model);
+    }
+
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index", "Home");
+    }
+
+    [AllowAnonymous]
+    public IActionResult AccessDenied()
+    {
+        return View("AccessDenied");
     }
 }

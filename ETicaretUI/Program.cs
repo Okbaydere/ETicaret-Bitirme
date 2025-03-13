@@ -2,6 +2,7 @@ using Dal.Abstract;
 using Dal.Concrete;
 using Data.Context;
 using Data.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,13 @@ builder.Services.AddScoped<ICategoryDal, CategoryDal>();
 builder.Services.AddScoped<IProductDal, ProductDal>();
 builder.Services.AddScoped<IOrderDal, OrderDal>();
 builder.Services.AddScoped<IOrderLineDal, OrderLineDal>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.AccessDeniedPath = new PathString("/Account/AccessDenied");
+        options.LoginPath = new PathString("/Account/Login");
+    });
 
 //Identity Kimlik Doğrulama
 builder.Services.AddIdentity<AppUser, AppRole>(option =>

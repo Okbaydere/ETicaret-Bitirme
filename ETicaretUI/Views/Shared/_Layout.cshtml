@@ -36,9 +36,7 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Admin
                                     Paneli</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Card" asp-action="Index">Categories</a>
-                            </li>
+                          
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Product</a>
                             </li>
@@ -69,6 +67,9 @@
                             </span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="List">Alışveriş</a>
+                    </li>
                     @if (User.Identity.Name == null)
                     {
                         <li class="nav-item">
@@ -77,6 +78,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-action="Register" asp-controller="Account">Register</a>
                         </li>
+                    
                     }
                     else
                     {
@@ -86,6 +88,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-action="Logout" asp-controller="Account">Logout</a>
                         </li>
+                    
                     }
 
                 </ul>
