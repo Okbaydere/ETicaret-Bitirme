@@ -3,6 +3,7 @@ using Data.Context;
 using Data.Entities;
 using ETicaretUI.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ETicaretUI.Controllers;
 
@@ -74,5 +75,93 @@ public class CategoryController : Controller
         }
 
         return View(category);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName,Description")] Category category)
+    {
+        if (id != category.Id)
+        {
+            return RedirectToAction("Error", "Home");
+        }
+
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                _categoryDal.Update(category);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CategoryExists(category.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        return View(category);
+    }
+
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var category = await _context.Categories
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (category == null)
+        {
+            return RedirectToAction("Error", "Home");
+        }
+
+        return View(category);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var category = await _context.Categories
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        if (category.Products != null && category.Products.Any())
+        {
+            TempData["ErrorMessage"] =
+                $"{category.CategoryName} kategorisinde {category.Products.Count} adet ürün bulunduğu için silinemez. Önce ürünleri başka kategorilere taşıyın veya silin.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            _categoryDal.Delete(category);
+            TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla silindi.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = $"Kategori silinirken bir hata oluştu: {ex.Message}";
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+
+    private bool CategoryExists(int id)
+    {
+        return _context.Categories.Any(e => e.Id == id);
     }
 }
