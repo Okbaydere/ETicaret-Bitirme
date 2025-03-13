@@ -1,70 +1,82 @@
-@* @model Data.ViewModels.CardViewModel *@
 @model IEnumerable<Data.ViewModels.CardItem>
 @{
     Layout = "_Layout";
-}
+    ViewData["Title"] = "Sepetim";
 
+    var hasItems = Model != null && Model.Any();
+    decimal total = 0;
 
-<h1>Sepet</h1>
-<hr/>
-@if (Model == null)
-{
-    <div class="alert alert-danger" role="alert">
-        Sepetiniz Boş
-    </div>
-}
-else
-{
-    <table class="table table-bordered table-striped">
-        <thead>
-        <tr>
-            <th>Product Name</th>
-            <th>Product Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        @if (Model == null)
-        {
-            <div class="alert alert-danger" role="alert">
-                Kullanıcı Bulunamadı
-            </div>
-        }
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Product.Name</td>
-                <td>@item.Product.Price.ToString("c")</td>
-                <td>@item.Quantity</td>
-                <td>@((item.Product.Price * item.Quantity).ToString("c"))</td>
-                <td>
-                    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@item.Product.ProductId">Remove</a>
-                </td>
-                <td>
-                    @* <a asp-action="Buy" asp-controller="Card" asp-route-id="@Model.Pro" class="btn btn-success"> *@
-                    @*     <i class="fa-solid fa-cart-plus"></i> *@
-                    @*     <span class="badge">Add To Cart</span> *@
-                    @* </a> *@
-                </td>
-
-            </tr>
-        }
-
-        </tbody>
-        <tfoot>
-        <tr>
-            <td colspan="3">Total Price</td>
-            <td>@ViewBag.Total</td>
-        </tr>
-        </tfoot>
-    </table>
-}
-<div class="w-75">
-    <a asp-action="List" asp-controller="Home" class="float-start">Alışverişe devam et</a>
-    @if (Model != null && Model.Any())
+    if (hasItems)
     {
-        <a asp-action="CheckOut" asp-controller="Card" class="float-end">Alışverişi Tamamla</a>
+        total = Model.Sum(i => i.Product.Price * i.Quantity);
     }
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-shopping-cart me-2"></i> Sepetim</h2>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Sepet Ürünleri</h4>
+        </div>
+        <div class="card-body">
+            @if (!hasItems)
+            {
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i> Sepetinizde ürün bulunmamaktadır.
+                    <a asp-controller="Home" asp-action="List" class="alert-link">Alışverişe başlamak için tıklayın</a>.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Fiyat</th>
+                            <th>Adet</th>
+                            <th>Toplam</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Product.Name</td>
+                                <td>@item.Product.Price.ToString("c")</td>
+                                <td>@item.Quantity</td>
+                                <td>@((item.Product.Price * item.Quantity).ToString("c"))</td>
+                                <td>
+                                    <a asp-action="Delete" asp-route-id="@item.Product.ProductId"
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash-alt me-1"></i> Kaldır
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">Toplam Tutar:</td>
+                            <td colspan="2" class="fw-bold">@total.ToString("c")</td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="List" asp-controller="Home" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Alışverişe Devam Et
+                    </a>
+                    <a asp-action="CheckOut" asp-controller="Card" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i> Alışverişi Tamamla
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
 </div>

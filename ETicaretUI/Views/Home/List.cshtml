@@ -1,29 +1,43 @@
-@using Data.ViewModels
-@model ListViewModel
+@model Data.ViewModels.ListViewModel
 @{
-    ViewData["Title"] = "List";
+    ViewData["Title"] = "Ürün Listesi";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row">
-    <div class="col-md-3">
-      @Html.Partial("_GetCategoryList",Model.Categories)
-    </div>
-    <div class="col-md-9">
-        @if (Model.Products.Count == 0)
-        {
-            <div class="alert alert-danger" role="alert">
-                <i class="fa-solid fa-circle-exclamation"></i> Bu kategoride bir ürün bulunamadı.
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Kategori Listesi -->
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i> Kategoriler</h5>
+                </div>
+                <div class="card-body p-0">
+                    @Html.Partial("_GetCategoryList", Model.Categories)
+                </div>
             </div>
-        }
-        else
-        {
-            <div class="alert alert-info" role="alert">
-                <i class="fa-solid fa-circle-exclamation"></i> <strong>@Model.Products.Count</strong> adet ürün bulundu.
+        </div>
+
+        <!-- Ürün Listesi -->
+        <div class="col-md-9">
+            <!-- Ürün Sayısı Bildirimi -->
+            @if (Model.Products.Count == 0)
+            {
+                <div class="alert alert-warning shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Bu kategoride henüz ürün bulunmamaktadır.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info shadow-sm" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> <strong>@Model.Products.Count</strong> adet ürün bulundu.
+                </div>
+            }
+
+            <!-- Ürün Kartları -->
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                @Html.Partial("_ProductList", Model.Products)
             </div>
-        }
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            @Html.Partial("_ProductList",Model.Products)
         </div>
     </div>
 </div>
