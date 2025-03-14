@@ -34,7 +34,7 @@
             <span class="badge text-danger fs-4 fw-bold rounded">@Model.Price.ToString("c")</span>
         </div>
         <div>
-            <a asp-action="Buy" asp-controller="Card" asp-route-id="@Model.ProductId" class="btn btn-success">
+            <a asp-action="Buy" asp-controller="Cart" asp-route-id="@Model.ProductId" class="btn btn-success">
                 <i class="fa-solid fa-cart-plus"></i>
                 <span class="badge">Add To Cart</span>
             </a>

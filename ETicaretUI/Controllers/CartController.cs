@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ETicaretUI.Controllers;
 
-public class CardController : Controller
+public class CartController : Controller
 {
     private readonly IOrderDal _orderDal;
     private readonly IProductDal _productDal;
 
     // GET
-    public CardController(IOrderDal orderDal, IProductDal productDal)
+    public CartController(IOrderDal orderDal, IProductDal productDal)
     {
         _orderDal = orderDal;
         _productDal = productDal;

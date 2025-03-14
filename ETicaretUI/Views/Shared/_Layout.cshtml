@@ -48,9 +48,9 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Roles"
                                    asp-action="Index">Role</a>
                             </li>
-
                             <li class="nav-item">
-                                <a href="~/Order" class="nav-link text-dark">Orders</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Order"
+                                   asp-action="Index">Orders</a>
                             </li>
                         }
                     }
@@ -58,7 +58,7 @@
                 </ul>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a asp-action="Index" asp-controller="Card" class="nav-link btn btn-warning position-relative">
+                        <a asp-action="Index" asp-controller="Cart" class="nav-link btn btn-warning position-relative">
 
                             <i class="fa-solid fa-cart-plus"></i>
                             <span
@@ -83,7 +83,7 @@
                     else
                     {
                         <li class="nav-item">
-                            <a asp-action="Profile" asp-controller="Account" class="nav-link">@User.Identity.Name</a>
+                            <a asp-action="GetOrders" asp-controller="Account" class="nav-link">@User.Identity.Name</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-action="Logout" asp-controller="Account">Logout</a>

@@ -1,3 +1,4 @@
+using Dal.Abstract;
 using Data.Identity;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -11,13 +12,15 @@ public class AccountController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly RoleManager<AppRole> _roleManager;
+    private readonly IOrderDal _orderDal;
 
     public AccountController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager,
-        RoleManager<AppRole> roleManager)
+        RoleManager<AppRole> roleManager, IOrderDal orderDal)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _roleManager = roleManager;
+        _orderDal = orderDal;
     }
 
     public IActionResult Login()
@@ -135,5 +138,21 @@ public class AccountController : Controller
     public IActionResult AccessDenied()
     {
         return View("AccessDenied");
+    }
+
+    [Authorize] // Sadece giriş yapmış kullanıcılar erişebilsin
+    public async Task<IActionResult> GetOrders()
+    {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user == null)
+        {
+            return RedirectToAction("Login");
+        }
+
+        var orders = _orderDal.GetAll(x => x.UserName == user.UserName)
+            .OrderByDescending(x => x.OrderDate);
+
+        return View(orders);
     }
 }
