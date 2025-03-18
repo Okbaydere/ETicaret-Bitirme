@@ -16,6 +16,9 @@ builder.Services.AddScoped<ICategoryDal, CategoryDal>();
 builder.Services.AddScoped<IProductDal, ProductDal>();
 builder.Services.AddScoped<IOrderDal, OrderDal>();
 builder.Services.AddScoped<IOrderLineDal, OrderLineDal>();
+builder.Services.AddScoped<ICartDal, CartDal>();
+builder.Services.AddScoped<ICartItemDal, CartItemDal>();
+builder.Services.AddScoped<IAddressDal, AddressDal>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
