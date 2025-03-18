@@ -1,0 +1,59 @@
+@model Data.Entities.Address
+@{
+    ViewData["Title"] = "Yeni Adres Ekle";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-plus-circle me-2"></i> Yeni Adres Ekle</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Adreslerime Dön
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Adres Bilgileri</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Title" class="form-label">Adres Başlığı</label>
+                    <input asp-for="Title" class="form-control" placeholder="Örn: Ev, İş, Yazlık..."/>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="FullAddress" class="form-label">Adres</label>
+                    <textarea asp-for="FullAddress" class="form-control" rows="3"
+                              placeholder="Sokak, Mahalle, No, Daire, İlçe..."></textarea>
+                    <span asp-validation-for="FullAddress" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="City" class="form-label">Şehir</label>
+                    <input asp-for="City" class="form-control" placeholder="Örn: İstanbul, Ankara, İzmir..."/>
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="IsDefault" class="form-check-input"/>
+                    <label asp-for="IsDefault" class="form-check-label">Varsayılan adresim olarak ayarla</label>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+} 

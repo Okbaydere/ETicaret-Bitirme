@@ -1,0 +1,52 @@
+@model Data.Entities.Address
+@{
+    ViewData["Title"] = "Adres Sil";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-trash-alt me-2"></i> Adres Sil</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Adreslerime Dön
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h4 class="mb-0">Adresi Silmek Üzeresiniz</h4>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i> Bu adresi silmek istediğinizden emin misiniz? Bu işlem
+                geri alınamaz.
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        @Model.Title
+                        @if (Model.IsDefault)
+                        {
+                            <span class="badge bg-success ms-2">Varsayılan</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Adres:</strong> @Model.FullAddress</p>
+                    <p><strong>Şehir:</strong> @Model.City</p>
+                </div>
+            </div>
+
+            <form asp-action="Delete" method="post">
+                <input type="hidden" name="id" value="@Model.Id"/>
+
+                <div class="d-flex justify-content-end">
+                    <a asp-action="Index" class="btn btn-outline-secondary me-2">İptal</a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> Sil
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div> 
