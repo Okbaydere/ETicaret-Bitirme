@@ -5,6 +5,7 @@ using Data.Identity;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ETicaretUI.Controllers;
 
@@ -14,6 +15,7 @@ public class CartController : Controller
     private readonly IProductDal _productDal;
     private readonly ICartDal _cartDal;
     private readonly ICartItemDal _cartItemDal;
+    private readonly IAddressDal _addressDal;
     private readonly UserManager<AppUser> _userManager;
 
     public CartController(
@@ -21,12 +23,14 @@ public class CartController : Controller
         IProductDal productDal,
         ICartDal cartDal,
         ICartItemDal cartItemDal,
+        IAddressDal addressDal,
         UserManager<AppUser> userManager)
     {
         _orderDal = orderDal;
         _productDal = productDal;
         _cartDal = cartDal;
         _cartItemDal = cartItemDal;
+        _addressDal = addressDal;
         _userManager = userManager;
     }
 
@@ -224,6 +228,32 @@ public class CartController : Controller
                         Product = ci.Product,
                         Quantity = ci.Quantity
                     }).ToList();
+
+                    // Kullanıcının kayıtlı adreslerini getir
+                    var addresses = _addressDal.GetAddressesByUserId(user.Id);
+                    ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
+                    ViewBag.HasAddresses = addresses.Any();
+
+                    // Kullanıcı adını otomatik doldur
+                    var model = new ShippingDetails { UserName = user.UserName };
+
+                    // Varsayılan adresi varsa seç
+                    var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault);
+                    if (defaultAddress != null)
+                    {
+                        model.AddressId = defaultAddress.Id;
+                        model.AddressTitle = defaultAddress.Title;
+                        model.Address = defaultAddress.FullAddress;
+                        model.City = defaultAddress.City;
+                    }
+
+                    if (items.Count == 0)
+                    {
+                        TempData["Error"] = "Sepetinizde ürün bulunmamaktadır";
+                        return RedirectToAction("Index");
+                    }
+
+                    return View(model);
                 }
             }
         }
@@ -236,7 +266,7 @@ public class CartController : Controller
 
         if (items.Count == 0)
         {
-            ModelState.AddModelError("", "Sepetinizde ürün bulunmamaktadır");
+            TempData["Error"] = "Sepetinizde ürün bulunmamaktadır";
             return RedirectToAction("Index");
         }
 
@@ -264,8 +294,31 @@ public class CartController : Controller
                         Quantity = ci.Quantity
                     }).ToList();
 
-                    // Kullanıcı bilgilerini otomatik doldur
+                    // Kullanıcının kayıtlı adreslerini getir (validation hatası durumunda tekrar göstermek için)
+                    var addresses = _addressDal.GetAddressesByUserId(user.Id);
+                    ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
+                    ViewBag.HasAddresses = addresses.Any();
+
+                    // Eğer kayıtlı adres seçilmişse, adres bilgilerini al
+                    if (details.UseSelectedAddress && details.AddressId.HasValue)
+                    {
+                        var selectedAddress = _addressDal.Get(details.AddressId.Value);
+                        if (selectedAddress != null && selectedAddress.UserId == user.Id)
+                        {
+                            details.AddressTitle = selectedAddress.Title;
+                            details.Address = selectedAddress.FullAddress;
+                            details.City = selectedAddress.City;
+
+                            // Model validation'ı atla, adres bilgileri zaten doğru
+                            ModelState.Remove("AddressTitle");
+                            ModelState.Remove("Address");
+                            ModelState.Remove("City");
+                        }
+                    }
+
+                    // Kullanıcı adını otomatik doldur
                     details.UserName = user.UserName;
+                    ModelState.Remove("UserName");
                 }
             }
         }
@@ -279,6 +332,7 @@ public class CartController : Controller
         if (items.Count == 0)
         {
             ModelState.AddModelError("", "Sepetinizde ürün bulunmamaktadır");
+            return RedirectToAction("Index");
         }
 
         if (ModelState.IsValid)
@@ -307,10 +361,15 @@ public class CartController : Controller
                 SessionHelper.Count = 0;
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("OrderCompleted");
         }
 
         return View(details);
+    }
+
+    public IActionResult OrderCompleted()
+    {
+        return View();
     }
 
     private void SaveOrder(List<CardItem> items, ShippingDetails details)
@@ -322,9 +381,16 @@ public class CartController : Controller
         order.OrderDate = DateTime.Now;
         order.OrderState = EnumOrderState.Waiting;
         order.UserName = details.UserName;
-        order.Address = details.Address;
-        order.City = details.City;
         order.AddressTitle = details.AddressTitle;
+        order.AddressText = details.Address;
+        order.City = details.City;
+
+        // Kayıtlı adres kullanıldıysa ilişkiyi kur
+        if (details.UseSelectedAddress && details.AddressId.HasValue)
+        {
+            order.AddressId = details.AddressId;
+        }
+
         order.OrderLines = new List<OrderLine>();
 
         foreach (var item in items)

@@ -61,7 +61,7 @@ public class OrderController : Controller
             OrderState = order.OrderState,
             Total = order.Total,
             CustomerName = order.UserName,
-            Address = order.Address,
+            Address = order.AddressText,
             City = order.City,
             AddressTitle = order.AddressTitle,
             OrderLines = new List<OrderLineViewModel>()

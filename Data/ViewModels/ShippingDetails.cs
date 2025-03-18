@@ -15,4 +15,10 @@ public class ShippingDetails
 
     [Required(ErrorMessage = "Lütfen Boş Geçmeyiniz...")]
     public string City { get; set; }
+
+    // Kayıtlı adres seçimi için
+    public int? AddressId { get; set; }
+
+    // Seçili bir adres varsa diğer adres alanlarını zorunlu olmaktan çıkaracak flags
+    public bool UseSelectedAddress { get; set; } = false;
 }

@@ -12,14 +12,20 @@ public class Order
 
     public string UserName { get; set; }
 
+    // Adres ilişkisi
+    public int? AddressId { get; set; }
+    public virtual Address Address { get; set; }
+
+    // Eğer adres silinirse veya sepette adressiz sipariş oluşturulursa diye
     public string AddressTitle { get; set; }
-
-    public string Address { get; set; }
-
+    public string AddressText { get; set; }
     public string City { get; set; }
 
-    public virtual List<OrderLine>
-        OrderLines { get; set; } // Bu, Order entity'si ilk kez veritabanından çekildiğinde sadece
-    // Order tablosundaki temel veriler (Id, OrderNumber, Total, UserName, vb.) yüklenir.
-    // OrderLines ise başlangıçta yüklenmez .
+    public virtual List<OrderLine> OrderLines { get; set; }
+
+    public Order()
+    {
+        OrderLines = new List<OrderLine>();
+        OrderDate = DateTime.Now;
+    }
 }

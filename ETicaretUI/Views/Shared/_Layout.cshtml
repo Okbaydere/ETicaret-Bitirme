@@ -82,15 +82,30 @@
                     }
                     else
                     {
-                        <li class="nav-item">
-                            <a asp-action="GetOrders" asp-controller="Account" class="nav-link">@User.Identity.Name</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @User.Identity.Name
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="GetOrders">
+                                        <i class="fas fa-box me-2"></i> Siparişlerim
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Address" asp-action="Index">
+                                        <i class="fas fa-map-marker-alt me-2"></i> Adreslerim
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Logout">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Çıkış Yap
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-action="Logout" asp-controller="Account">Logout</a>
-                        </li>
-                    
                     }
-
                 </ul>
             </div>
         </div>

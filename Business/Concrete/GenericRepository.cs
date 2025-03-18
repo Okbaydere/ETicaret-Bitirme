@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Business.Concrete;
 
-public class GenericRepository<Tentity,Tcontext> : IGenericRepository<Tentity>where Tentity:class,new()
-where Tcontext:IdentityDbContext<AppUser,AppRole,int>,new()
+public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity> where Tentity : class, new()
+    where Tcontext : IdentityDbContext<AppUser, AppRole, int>, new()
 {
     public List<Tentity> GetAll(Expression<Func<Tentity, bool>> filter = null)
     {
@@ -19,18 +19,18 @@ where Tcontext:IdentityDbContext<AppUser,AppRole,int>,new()
 
     public Tentity Get(int id)
     {
-        using (var db= new Tcontext())
+        using (var db = new Tcontext())
         {
             var nesne = db.Set<Tentity>().Find(id);
             return nesne;
         }
     }
-    
+
     public Tentity Get(Expression<Func<Tentity, bool>> filter)
     {
-        using (var  db= new Tcontext())
+        using (var db = new Tcontext())
         {
-            var nesne  = db.Set<Tentity>().Find(filter);
+            var nesne = db.Set<Tentity>().FirstOrDefault(filter);
             return nesne;
         }
     }
@@ -55,7 +55,7 @@ where Tcontext:IdentityDbContext<AppUser,AppRole,int>,new()
 
     public void Delete(Tentity tentity)
     {
-        using (var  db = new Tcontext())
+        using (var db = new Tcontext())
         {
             db.Entry(tentity).State = EntityState.Deleted;
             db.SaveChanges();
@@ -66,7 +66,7 @@ where Tcontext:IdentityDbContext<AppUser,AppRole,int>,new()
 
     public void Delete(int id)
     {
-        using (var  db = new Tcontext())
+        using (var db = new Tcontext())
         {
             var nesne = db.Set<Tentity>().Find(id);
             db.Set<Tentity>().Remove(nesne);

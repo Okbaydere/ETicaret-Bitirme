@@ -16,3 +16,15 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Dropdown menü düzenlemeleri */
+.dropdown-menu {
+    max-width: 280px; /* Maksimum genişlik */
+    overflow-x: hidden; /* Yatay taşmayı engelle */
+    white-space: normal; /* Uzun metinlerin alt satıra geçmesini sağla */
+}
+
+.dropdown-menu .dropdown-item {
+    white-space: normal; /* Dropdown item'ların uzun olduğunda alt satıra geçmesini sağla */
+    word-wrap: break-word; /* Uzun kelimelerin kırılmasını sağla */
+}
