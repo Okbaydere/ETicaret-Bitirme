@@ -10,7 +10,8 @@ public class ETicaretContext : IdentityDbContext<AppUser, AppRole, int>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(
-            "Server=tcp:10.20.103.33,1433;Database=ETicaret;User ID=SA;Password=Softito1882;Trusted_Connection=False;Encrypt=False;");
+               //"Server=tcp:10.20.103.33,1433;Database=ETicaret;User ID=SA;Password=Softito1882;Trusted_Connection=False;Encrypt=False;");
+               "Server=DESKTOP-TUBBJ3B;Database=ETicaret;Trusted_Connection=True;");
     }
 
     public DbSet<Category> Categories { get; set; }

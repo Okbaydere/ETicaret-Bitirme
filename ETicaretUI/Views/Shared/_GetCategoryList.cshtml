@@ -1,18 +1,20 @@
 @model System.Collections.Generic.List<Data.Entities.Category>
 
-<ul class="list-group">
+<ul class="list-group rounded-3 overflow-hidden">
     @if (ViewBag.Id == 0)
     {
-        <a class="list-group-item active" href="/Home/List/">
-            <i class="fa-solid fa-angles-right"></i>
-            Tüm Kategoriler
+        <a class="list-group-item active d-flex align-items-center" href="@Url.Action("List", "Home", new { page = 1 })">
+            <i class="fas fa-th-large me-2"></i>
+            <span>Tüm Kategoriler</span>
+            <span class="ms-auto badge bg-white text-primary rounded-pill">@Model.Count</span>
         </a>
     }
     else
     {
-        <a class="list-group-item" href="/Home/List/">
-            <i class="fa-solid fa-angles-right"></i>
-            Tüm Kategoriler
+        <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { page = 1 })">
+            <i class="fas fa-th-large me-2"></i>
+            <span>Tüm Kategoriler</span>
+            <span class="ms-auto badge bg-light text-dark rounded-pill">@Model.Count</span>
         </a>
     }
 
@@ -22,26 +24,63 @@
         {
             if (category.Id == ViewBag.Id)
             {
-                <a class="list-group-item active" href="/Home/List/@category.Id">
-                    <i class="fa-solid fa-angles-right"></i>
-                    @category.CategoryName
+                <a class="list-group-item active d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
+                    <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
+                    <span>@category.CategoryName</span>
+                    <span class="ms-auto badge bg-white text-primary rounded-pill">@(category.Products?.Count ?? 0)</span>
                 </a>
             }
             else
             {
-                <a class="list-group-item" href="/Home/List/@category.Id">
-                    <i class="fa-solid fa-angles-right"></i>
-                    @category.CategoryName
+                <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
+                    <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
+                    <span>@category.CategoryName</span>
+                    <span class="ms-auto badge bg-light text-dark rounded-pill">@(category.Products?.Count ?? 0)</span>
                 </a>
             }
         }
         else
         {
-            <a class="list-group-item" href="/Home/List/@category.Id">
-                <i class="fa-solid fa-angles-right"></i>
-                @category.CategoryName
+            <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
+                <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
+                <span>@category.CategoryName</span>
+                <span class="ms-auto badge bg-light text-dark rounded-pill">@(category.Products?.Count ?? 0)</span>
             </a>
         }
-        
     }
 </ul>
+
+@functions {
+    public string GetCategoryIcon(string categoryName)
+    {
+        if (string.IsNullOrEmpty(categoryName)) return "fas fa-folder";
+
+        categoryName = categoryName.ToLowerInvariant();
+
+        if (categoryName.Contains("elektronik") || categoryName.Contains("bilgisayar") || categoryName.Contains("telefon"))
+            return "fas fa-laptop";
+
+        if (categoryName.Contains("giyim") || categoryName.Contains("ayakkabı") || categoryName.Contains("kıyafet"))
+            return "fas fa-tshirt";
+
+        if (categoryName.Contains("kozmetik") || categoryName.Contains("bakım") || categoryName.Contains("güzellik"))
+            return "fas fa-spa";
+
+        if (categoryName.Contains("kitap") || categoryName.Contains("kırtasiye"))
+            return "fas fa-book";
+
+        if (categoryName.Contains("ev") || categoryName.Contains("mobilya") || categoryName.Contains("dekorasyon"))
+            return "fas fa-home";
+
+        if (categoryName.Contains("spor") || categoryName.Contains("outdoor"))
+            return "fas fa-running";
+
+        if (categoryName.Contains("oyuncak") || categoryName.Contains("bebek"))
+            return "fas fa-baby";
+
+        if (categoryName.Contains("gıda") || categoryName.Contains("yiyecek") || categoryName.Contains("içecek"))
+            return "fas fa-utensils";
+
+        return "fas fa-tag";
+    }
+}

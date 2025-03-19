@@ -417,4 +417,46 @@ public class CartController : Controller
 
         return -1;
     }
+
+    public async Task<IActionResult> RemoveAll(int id)
+    {
+        if (User.Identity.IsAuthenticated)
+        {
+            // Kullanıcı giriş yapmışsa veritabanındaki sepetten ürünü tamamen sil
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                var cart = _cartDal.GetCartByUserId(user.Id);
+                if (cart != null)
+                {
+                    var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == id);
+                    if (cartItem != null)
+                    {
+                        // Ürünü sepetten tamamen kaldır
+                        _cartItemDal.Delete(cartItem);
+
+                        // Sepet eleman sayısını güncelle
+                        var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+                        SessionHelper.Count = cartItems.Count;
+                    }
+                }
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        // Kullanıcı giriş yapmamışsa session'dan sil (eski davranış)
+        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
+        if (card != null)
+        {
+            int index = IsExist(card, id);
+            if (index >= 0)
+            {
+                card.RemoveAt(index);
+                SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+            }
+        }
+
+        return RedirectToAction("Index");
+    }
 }

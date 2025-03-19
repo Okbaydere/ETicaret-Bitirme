@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 using Dal.Abstract;
+using Data.Context;
 using Data.ViewModels;
 using ETicaretUI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ETicaretUI.Controllers;
 
@@ -11,13 +13,17 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly ICategoryDal _categoryDal;
     private readonly IProductDal _productDal;
+    private readonly ETicaretContext _context;
 
+    // Sayfa başına gösterilecek ürün sayısı
+    private const int PageSize = 6;
 
-    public HomeController(ILogger<HomeController> logger, ICategoryDal categoryDal, IProductDal productDal)
+    public HomeController(ILogger<HomeController> logger, ICategoryDal categoryDal, IProductDal productDal, ETicaretContext context)
     {
         _logger = logger;
         _categoryDal = categoryDal;
         _productDal = productDal;
+        _context = context;
     }
 
 
@@ -27,21 +33,102 @@ public class HomeController : Controller
         return View(product);
     }
 
-    public IActionResult List(int? id)
+    public IActionResult List(int? id, string sortOrder = "", decimal? minPrice = null, decimal? maxPrice = null, string searchTerm = "", int page = 1)
     {
-        //category ve productları aynı sayfada göreceğiz
-        ViewBag.id = id;
-        var product = _productDal.GetAll(x => x.IsApproved);
-        if (id != null)
+        ViewBag.Id = id;
+        ViewBag.CurrentSortOrder = sortOrder;
+        ViewBag.MinPrice = minPrice;
+        ViewBag.MaxPrice = maxPrice;
+        ViewBag.SearchTerm = searchTerm;
+        ViewBag.CurrentPage = page;
+
+        // Bütün onaylanmış ürünleri al
+        var products = _productDal.GetAll(x => x.IsApproved).AsQueryable();
+
+        // Kategori filtresi
+        if (id != null && id > 0)
         {
-            product = product.Where(x => x.CategoryId == id).ToList();
+            products = products.Where(x => x.CategoryId == id).ToList().AsQueryable();
         }
 
+        // Arama filtresi
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            products = products.Where(p =>
+                p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                (p.Description != null && p.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            ).ToList().AsQueryable();
+        }
+
+        // Fiyat filtresi
+        if (minPrice.HasValue)
+        {
+            products = products.Where(p => p.Price >= minPrice.Value).ToList().AsQueryable();
+        }
+
+        if (maxPrice.HasValue)
+        {
+            products = products.Where(p => p.Price <= maxPrice.Value).ToList().AsQueryable();
+        }
+
+        // Sıralama
+        switch (sortOrder)
+        {
+            case "price_asc":
+                products = products.OrderBy(p => p.Price).ToList().AsQueryable();
+                break;
+            case "price_desc":
+                products = products.OrderByDescending(p => p.Price).ToList().AsQueryable();
+                break;
+            case "name_asc":
+                products = products.OrderBy(p => p.Name).ToList().AsQueryable();
+                break;
+            case "name_desc":
+                products = products.OrderByDescending(p => p.Name).ToList().AsQueryable();
+                break;
+            default:
+                // Varsayılan sıralama
+                products = products.OrderBy(p => p.Name).ToList().AsQueryable();
+                break;
+        }
+
+        // Toplam ürün sayısı ve sayfa sayısı
+        var totalItems = products.Count();
+        var totalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
+
+        // Geçerli sayfa numarasının kontrolü
+        if (page < 1) page = 1;
+        if (page > totalPages && totalPages > 0) page = totalPages;
+
+        ViewBag.TotalPages = totalPages;
+
+        // Sayfalama için ürünleri al
+        var paginatedProducts = products
+            .Skip((page - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+        // Kategorileri ilişkili ürünlerle birlikte yükle
+        var categories = _context.Categories
+            .Include(c => c.Products)
+            .ToList();
+
+        // Fiyat aralığı için min ve max değerleri bul
+        var allProducts = _productDal.GetAll(x => x.IsApproved);
+        ViewBag.AbsoluteMinPrice = allProducts.Any() ? Math.Floor(allProducts.Min(p => p.Price)) : 0;
+        ViewBag.AbsoluteMaxPrice = allProducts.Any() ? Math.Ceiling(allProducts.Max(p => p.Price)) : 5000;
+
+        // Sayfalama bilgilerini modele ekle
         var models = new ListViewModel()
         {
-            Categories = _categoryDal.GetAll(),
-            Products = product
+            Categories = categories,
+            Products = paginatedProducts,
+            TotalItems = totalItems,
+            CurrentPage = page,
+            TotalPages = totalPages,
+            PageSize = PageSize
         };
+
         return View(models);
     }
 
