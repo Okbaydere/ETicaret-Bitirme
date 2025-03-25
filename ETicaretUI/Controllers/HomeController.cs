@@ -29,12 +29,20 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        // Stok sıfır olan ürünleri deaktif et
+        _productDal.DeactivateOutOfStockProducts();
+        
+        // Sadece aktif, anasayfada gösterilecek ve onaylı ürünleri getir
         var product = _productDal.GetAll(x => x.IsHome && x.IsApproved);
         return View(product);
     }
 
     public IActionResult List(int? id, string sortOrder = "", decimal? minPrice = null, decimal? maxPrice = null, string searchTerm = "", int page = 1)
     {
+        // Stok sıfır olan ürünleri deaktif et
+        _productDal.DeactivateOutOfStockProducts();
+        
+        // Açıkça id=null geldiyse (Tüm Kategoriler linki ile), kategori filtresini temizle
         ViewBag.Id = id;
         ViewBag.CurrentSortOrder = sortOrder;
         ViewBag.MinPrice = minPrice;
@@ -42,13 +50,13 @@ public class HomeController : Controller
         ViewBag.SearchTerm = searchTerm;
         ViewBag.CurrentPage = page;
 
-        // Bütün onaylanmış ürünleri al
+        // Bütün onaylanmış ve aktif ürünleri al
         var products = _productDal.GetAll(x => x.IsApproved).AsQueryable();
 
         // Kategori filtresi
-        if (id != null && id > 0)
+        if (id.HasValue && id.Value > 0)
         {
-            products = products.Where(x => x.CategoryId == id).ToList().AsQueryable();
+            products = products.Where(x => x.CategoryId == id.Value).ToList().AsQueryable();
         }
 
         // Arama filtresi
@@ -110,7 +118,8 @@ public class HomeController : Controller
 
         // Kategorileri ilişkili ürünlerle birlikte yükle
         var categories = _context.Categories
-            .Include(c => c.Products)
+            .Include(c => c.Products.Where(p => p.IsActive && p.IsApproved))
+            .Where(c => c.IsActive)
             .ToList();
 
         // Fiyat aralığı için min ve max değerleri bul
@@ -139,6 +148,21 @@ public class HomeController : Controller
     }
 
     public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    public IActionResult About()
+    {
+        return View();
+    }
+
+    public IActionResult Contact()
+    {
+        return View();
+    }
+
+    public IActionResult FAQ()
     {
         return View();
     }

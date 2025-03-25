@@ -13,6 +13,7 @@ public class CartItemDal : GenericRepository<CartItem, ETicaretContext>, ICartIt
         using var context = new ETicaretContext();
         return context.CartItems
             .Include(ci => ci.Product)
+            .ThenInclude(p => p.Category)
             .Where(ci => ci.CartId == cartId)
             .ToList();
     }

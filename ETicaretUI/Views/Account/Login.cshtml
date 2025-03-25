@@ -1,33 +1,116 @@
 @model Data.ViewModels.LoginViewModel
 @{
-    ViewBag.Title = "title";
-    Layout = "_Layout";
+    ViewData["Title"] = "Giriş Yap";
 }
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
 
-<h1>Login</h1>
-<hr/>
-<form method="post">
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.UserName)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.UserName, new { @class = "form-control" })
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+            
+
+                    <form method="post" asp-action="Login" asp-controller="Account" autocomplete="off">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="UserName" class="form-label">Kullanıcı Adı veya E-posta</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input asp-for="UserName" class="form-control" placeholder="Kullanıcı adı veya e-posta adresinizi girin" autocomplete="username" />
+                            </div>
+                            <span asp-validation-for="UserName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Şifre</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input asp-for="Password" class="form-control" placeholder="Şifrenizi girin" autocomplete="current-password" />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label">Beni Hatırla</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" id="loginButton">
+                                <i class="fas fa-sign-in-alt me-2"></i> Giriş Yap
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="text-decoration-none">Şifremi Unuttum</a>
+                        <p class="mb-0">Hesabınız yok mu? <a asp-action="Register" asp-controller="Account">Kayıt Ol</a></p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.Password)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.Password, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.CheckBoxFor(m => m.RememberMe)
-        @Html.LabelFor(m => m.RememberMe)
-    </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Ok</button>
-    </div>
-</form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Şifre göster/gizle işlevselliği
+        document.addEventListener('DOMContentLoaded', function () {
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('Password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (togglePassword && password && toggleIcon) {
+                togglePassword.addEventListener('click', function () {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+
+                    // Simgeyi değiştir
+                    toggleIcon.classList.toggle('fa-eye');
+                    toggleIcon.classList.toggle('fa-eye-slash');
+                });
+            }
+
+            // Form gönderiminde düğmeyi devre dışı bırak ve metin değiştir
+            const form = document.querySelector('form');
+            const loginButton = document.getElementById('loginButton');
+
+            if (form && loginButton) {
+                form.addEventListener('submit', function() {
+                    // Formun geçerli olduğundan emin ol
+                    if (this.checkValidity()) {
+                        loginButton.disabled = true;
+                        loginButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Giriş Yapılıyor...';
+                    }
+                });
+            }
+        });
+    </script>
+}

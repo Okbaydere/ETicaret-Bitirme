@@ -20,6 +20,8 @@ public class Product
     
     public bool IsApproved { get; set; } // Satışta mı
     
+    public bool IsActive { get; set; } = true; // Soft delete için
+    
     public int CategoryId { get; set; }
     
     public Category? Category { get; set; }

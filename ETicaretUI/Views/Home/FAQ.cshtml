@@ -1,0 +1,101 @@
+@{
+    ViewData["Title"] = "Sıkça Sorulan Sorular | ETicaret";
+}
+
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-lg-12 text-center">
+            <h1 class="display-4 fw-bold">Sıkça Sorulan Sorular</h1>
+            <p class="lead text-muted">Sorularınızın cevaplarını burada bulabilirsiniz.</p>
+            <hr class="my-4">
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="input-group mb-5">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0" placeholder="Sorularınızı arayın..." id="faqSearch">
+                    </div>
+
+                    <div class="accordion accordion-flush" id="faqAccordion">
+                        <!-- Sipariş ve Teslimat -->
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded">
+                            <h2 class="accordion-header" id="heading1">
+                                <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1" aria-expanded="false" aria-controls="collapse1">
+                                    <i class="fas fa-truck text-primary me-2"></i>
+                                    <strong>Siparişim ne zaman elime ulaşır?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse" aria-labelledby="heading1" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>Siparişleriniz, ödeme onayından sonra genellikle 1-3 iş günü içerisinde kargoya verilmektedir. Kargoya verildikten sonra, bulunduğunuz bölgeye göre 1-3 iş günü içerisinde teslim edilmektedir. Toplam teslimat süresi, ürünün stok durumu ve adresinize göre değişiklik gösterebilir.</p>
+                                    <p>Siparişinizin durumunu, hesabınızdan "Siparişlerim" bölümünden takip edebilirsiniz.</p>
+                                </div>
+                            </div>
+                        </div>
+
+               
+
+
+                  
+
+           
+
+                        <div class="accordion-item border-0 mb-3 shadow-sm rounded">
+                            <h2 class="accordion-header" id="heading7">
+                                <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                                    <i class="fas fa-shield-alt text-primary me-2"></i>
+                                    <strong>Kişisel verilerim nasıl korunuyor?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapse7" class="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    <p>ETicaret olarak, müşterilerimizin kişisel verilerinin güvenliği bizim için çok önemlidir. Kişisel verileriniz, KVKK (Kişisel Verilerin Korunması Kanunu) kapsamında korunmaktadır.</p>
+                                    <p>Sitemizdeki tüm finansal işlemler SSL güvenlik protokolü ile şifrelenmekte ve korunmaktadır. Kredi kartı bilgileriniz sistemimizde saklanmamaktadır.</p>
+                                    <p>Kişisel verilerinizin işlenmesi hakkında detaylı bilgi için <a href="/Home/Privacy">Gizlilik Politikamızı</a> inceleyebilirsiniz.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <h4 class="mb-4">Başka sorunuz mu var?</h4>
+            <p class="text-muted mb-4">Aradığınız cevabı bulamadıysanız, müşteri hizmetlerimiz ile iletişime geçebilirsiniz.</p>
+            <a href="/Home/Contact" class="btn btn-primary btn-lg px-4">
+                <i class="fas fa-envelope me-2"></i>Bize Ulaşın
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // SSS arama fonksiyonu
+        const searchInput = document.getElementById('faqSearch');
+        searchInput.addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            
+            accordionItems.forEach(item => {
+                const questionText = item.querySelector('.accordion-button').textContent.toLowerCase();
+                const answerText = item.querySelector('.accordion-body').textContent.toLowerCase();
+                
+                if (questionText.includes(searchText) || answerText.includes(searchText)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+</script> 

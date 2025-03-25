@@ -6,7 +6,7 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><i class="fas fa-box-open me-2"></i> Ürünler</h2>
+        <h2><i class="fas fa-box-open me-2"></i> Ürün Yönetimi</h2>
         <a asp-action="Create" class="btn btn-success">
             <i class="fas fa-plus me-1"></i> Yeni Ürün
         </a>
@@ -23,8 +23,10 @@
                     <tr>
                         <th>Resim</th>
                         <th>Ürün Adı</th>
+                        <th>Kategori</th>
                         <th>Fiyat</th>
                         <th>Stok</th>
+                        <th>Durum</th>
                         <th width="200">İşlemler</th>
                     </tr>
                     </thead>
@@ -32,41 +34,84 @@
                     @if (Model.Count == 0)
                     {
                         <tr>
-                            <td colspan="6" class="text-center py-3">
+                            <td colspan="7" class="text-center py-3">
                                 <div class="alert alert-info mb-0">
                                     <i class="fas fa-info-circle me-2"></i> Henüz kayıtlı ürün bulunmamaktadır.
                                 </div>
                             </td>
                         </tr>
                     }
+                    
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr class="@(!item.IsActive ? "table-secondary" : "")">
                             <td>
                                 @if (!string.IsNullOrEmpty(item.Image))
                                 {
                                     <img src="@item.Image" class="img-thumbnail"
-                                         style="width: 50px; height: 50px; object-fit: cover;" alt="@item.Name"/>
+                                         style="width: 50px; height: 50px; object-fit: cover; @(!item.IsActive ? "opacity: 0.5;" : "")" alt="@item.Name"/>
                                 }
                                 else
                                 {
                                     <img src="~/images/no-image.png" class="img-thumbnail"
-                                         style="width: 50px; height: 50px; object-fit: cover;" alt="Resim Yok"/>
+                                         style="width: 50px; height: 50px; object-fit: cover; @(!item.IsActive ? "opacity: 0.5;" : "")" alt="Resim Yok"/>
                                 }
                             </td>
-                            <td>@item.Name</td>
+                            <td>
+                                @item.Name
+                                @if (!item.IsActive)
+                                {
+                                    <span class="badge bg-secondary ms-1">Pasif</span>
+                                }
+                            </td>
+                            <td>@(item.Category?.CategoryName ?? "Kategori Yok")</td>
                             <td>@item.Price.ToString("C2")</td>
-                            <td>@item.Stock</td>
+                            <td>
+                                @if (item.Stock <= 0)
+                                {
+                                    <span class="badge bg-danger">Stok Yok</span>
+                                }
+                                else
+                                {
+                                    @item.Stock
+                                }
+                            </td>
+                            <td>
+                                @if (!item.IsActive)
+                                {
+                                    <span class="badge bg-danger">Ürün Pasif</span>
+                                }
+                                else if (item.Stock <= 0)
+                                {
+                                    <span class="badge bg-warning text-dark">Stok Yok</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                            </td>
                             <td>
                                 <a asp-action="Edit" asp-route-id="@item.ProductId"
                                    class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit"></i> Düzenle
                                 </a>
-                                <a asp-action="Delete" asp-route-id="@item.ProductId"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Bu ürünü silmek istediğinizden emin misiniz?');">
-                                    <i class="fas fa-trash-alt"></i> Sil
-                                </a>
+                                
+                                @if (item.IsActive)
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.ProductId"
+                                       class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Bu ürünü pasif duruma getirmek istediğinizden emin misiniz?');">
+                                        <i class="fas fa-trash-alt"></i> Pasife Al
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="Activate" asp-route-id="@item.ProductId"
+                                       class="btn btn-sm btn-outline-success"
+                                       onclick="return confirm('Bu ürünü aktif duruma getirmek istediğinizden emin misiniz?');">
+                                        <i class="fas fa-check"></i> Aktifleştir
+                                    </a>
+                                }
                             </td>
                         </tr>
                     }

@@ -19,6 +19,6 @@ public class ShippingDetails
     // Kayıtlı adres seçimi için
     public int? AddressId { get; set; }
 
-    // Seçili bir adres varsa diğer adres alanlarını zorunlu olmaktan çıkaracak flags
+    // Seçili bir adres varsa diğer adres alanlarını zorunlu olmaktan çıkaralım
     public bool UseSelectedAddress { get; set; } = false;
 }

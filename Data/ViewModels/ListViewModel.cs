@@ -13,10 +13,9 @@ public class ListViewModel
     public int TotalPages { get; set; }
     public int PageSize { get; set; }
 
-    // Önceki sayfa var mı?
+
     public bool HasPreviousPage => CurrentPage > 1;
 
-    // Sonraki sayfa var mı?
     public bool HasNextPage => CurrentPage < TotalPages;
 
     public ListViewModel()

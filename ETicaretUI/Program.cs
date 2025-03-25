@@ -2,6 +2,7 @@ using Dal.Abstract;
 using Dal.Concrete;
 using Data.Context;
 using Data.Identity;
+using ETicaretUI.SeedData;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 
@@ -79,6 +80,22 @@ app.UseRouting();
 app.UseAuthentication(); //kimlik doğrulama
 app.UseAuthorization(); //Yetkilendirme işlemi
 app.UseSession(); //oturum yönetimini aktifleştir
+
+// Seed verileri oluştur
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Kullanıcı ve rolleri oluştur
+        await SeedData.InitializeAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Seed verileri oluşturulurken bir hata oluştu.");
+    }
+}
 
 app.MapControllerRoute(
     name: "default",

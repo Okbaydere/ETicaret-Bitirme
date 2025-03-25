@@ -25,7 +25,14 @@ public class ProductController : Controller
 
     public IActionResult Index()
     {
-        return View(_productDal.GetAll());
+        // IsActive=false (silinmiş) ürünleri de dahil etmek için doğrudan context üzerinden sorgu yapıyoruz
+        var products = _context.Products
+            .Include(p => p.Category)
+            .OrderByDescending(p => p.IsActive) // Aktif ürünler üstte, silinmiş ürünler altta
+            .ThenBy(p => p.Name)
+            .ToList();
+            
+        return View(products);
     }
 
     public IActionResult Create()
@@ -76,7 +83,7 @@ public class ProductController : Controller
 
     [HttpPost]
     public async Task<IActionResult> Edit(int id,
-        [Bind("ProductId,Name,CategoryId,Stock,Price,Image,IsHome,IsApproved")]
+        [Bind("ProductId,Name,CategoryId,Stock,Price,Image,IsHome,IsApproved,IsActive")]
         Product product)
     {
         if (id != product.ProductId)
@@ -139,6 +146,28 @@ public class ProductController : Controller
         {
             _productDal.Delete(product);
         }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Activate(int? id)
+    {
+        if (id == null)
+        {
+            return NotFound();
+        }
+
+        var product = await _context.Products.FindAsync(id);
+        if (product == null)
+        {
+            return NotFound();
+        }
+
+        // Ürünü aktifleştir
+        product.IsActive = true;
+        _context.Update(product);
+        await _context.SaveChangesAsync();
 
         return RedirectToAction(nameof(Index));
     }

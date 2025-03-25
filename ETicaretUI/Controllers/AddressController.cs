@@ -69,7 +69,16 @@ public class AddressController : Controller
                 address.IsDefault = true;
             }
 
+            // Kaydet
             _addressDal.Add(address);
+            
+            // Eğer varsayılan adres olarak işaretlendiyse, SetDefaultAddress metodunu çağır
+            // Bu, diğer tüm adreslerin IsDefault değerini false yapacak
+            if (address.IsDefault)
+            {
+                _addressDal.SetDefaultAddress(address.Id, user.Id);
+            }
+            
             return RedirectToAction("Index");
         }
         catch (Exception ex)
@@ -122,7 +131,6 @@ public class AddressController : Controller
 
             _addressDal.Update(existingAddress);
 
-            // Eğer bu adres varsayılan olarak işaretlendiyse
             if (address.IsDefault && !existingAddress.IsDefault)
             {
                 _addressDal.SetDefaultAddress(address.Id, user.Id);
@@ -166,7 +174,6 @@ public class AddressController : Controller
             return NotFound();
         }
 
-        // Eğer varsayılan adres siliniyorsa ve başka adres varsa, diğer bir adresi varsayılan yap
         if (address.IsDefault)
         {
             var otherAddresses = _addressDal.GetAddressesByUserId(user.Id)

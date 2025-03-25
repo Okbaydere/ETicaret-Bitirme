@@ -17,6 +17,7 @@ public class AccountController : Controller
     private readonly IOrderDal _orderDal;
     private readonly ICartDal _cartDal;
     private readonly ICartItemDal _cartItemDal;
+    private readonly IAddressDal _addressDal;
 
     public AccountController(
         UserManager<AppUser> userManager,
@@ -24,7 +25,8 @@ public class AccountController : Controller
         RoleManager<AppRole> roleManager,
         IOrderDal orderDal,
         ICartDal cartDal,
-        ICartItemDal cartItemDal)
+        ICartItemDal cartItemDal,
+        IAddressDal addressDal)
     {
         _userManager = userManager;
         _signInManager = signInManager;
@@ -32,6 +34,7 @@ public class AccountController : Controller
         _orderDal = orderDal;
         _cartDal = cartDal;
         _cartItemDal = cartItemDal;
+        _addressDal = addressDal;
     }
 
     public IActionResult Login()
@@ -43,42 +46,102 @@ public class AccountController : Controller
 
         return View();
     }
-
     [HttpPost]
-    public async Task<IActionResult> Login(LoginViewModel login)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
-        if (ModelState.IsValid)
+        // Giriş yapmış kullanıcıyı kontrol et
+        if (User.Identity.IsAuthenticated)
         {
-            var user = await _userManager.FindByNameAsync(login.UserName);
-            if (user != null)
-            {
-                var result = await _signInManager.PasswordSignInAsync(login.UserName,
-                    login.Password, login.RememberMe, true);
-
-                if (result.Succeeded)
-                {
-                    // Session'daki sepeti kullanıcının veritabanı sepetine aktar
-                    await MergeCartWithDatabase(user.Id);
-
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError("", "Kullanıcı adı veya şifre hatalı");
-            }
-            else
-            {
-                ModelState.AddModelError("", "Kullanıcı bulunamadı");
-            }
+            return RedirectToAction("Index", "Home");
         }
 
-        return View(login);
+        // TempData için bir başlangıç değeri ata (logging amaçlıysa)
+        TempData["LogInfo"] = "Login attempt started";
+
+        if (ModelState.IsValid)
+        {
+            var user = await _userManager.FindByNameAsync(model.UserName);
+
+            if (user == null)
+            {
+                // E-posta ile arama deneyelim
+                user = await _userManager.FindByEmailAsync(model.UserName);
+            }
+
+            if (user == null)
+            {
+                TempData["LogInfo"] += " | User not found by username or email";
+                ModelState.AddModelError(string.Empty, "Kullanıcı adı ya da şifre hatalı. Lütfen tekrar deneyiniz.");
+                return View(model);
+            }
+
+
+            if (!user.IsActive)
+            {
+                TempData["LogInfo"] += " | User is inactive";
+                ModelState.AddModelError(string.Empty, "Hesabınız pasif durumda. Lütfen yönetici ile iletişime geçin.");
+                return View(model);
+            }
+
+            // Önce şifre kontrolü yap, eğer şifre yanlışsa ve ardından signIn denemesi
+            // yaparsak gereksiz bir lockout riski oluşabilir
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, model.Password);
+            TempData["LogInfo"] += $" | Password check result: {isPasswordValid}";
+
+            if (!isPasswordValid)
+            {
+                TempData["LogInfo"] += " | Password is invalid";
+                ModelState.AddModelError(string.Empty, "Kullanıcı adı ya da şifre hatalı. Lütfen tekrar deneyiniz.");
+                return View(model);
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true // Account lockout için aktif et
+            );
+
+
+            if (result.Succeeded)
+            {
+                // Session'daki sepeti kullanıcının veritabanı sepetine aktar
+                await MergeCartWithDatabase(user.Id);
+
+                // Başarılı giriş sonrası her zaman ana sayfaya yönlendir
+                return RedirectToAction("Index", "Home");
+            }
+
+            if (result.RequiresTwoFactor)
+            {
+                return RedirectToPage("./LoginWith2fa", new { RememberMe = model.RememberMe });
+            }
+
+            if (result.IsLockedOut)
+            {
+                TempData["LogInfo"] += " | Account is locked out";
+                ModelState.AddModelError(string.Empty, "Hesabınız kilitlendi. Lütfen daha sonra tekrar deneyiniz.");
+                return RedirectToPage("./Lockout");
+            }
+
+            // Eğer şifre kontrolü başarılı ama giriş başarısız olduysa
+            ModelState.AddModelError(string.Empty, "Giriş yapılamadı. Lütfen tekrar deneyiniz.");
+            return View(model);
+        }
+
+        TempData["LogInfo"] += " | ModelState is invalid: " + string.Join(", ", ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage));
+
+        return View(model);
     }
 
-    // Session'daki sepeti veritabanındaki sepetle birleştir
+    // Kullanıcı giriş yaptığında, Session'daki sepeti veritabanındaki sepetle birleştirir
+    // Yani kullanıcı giriş yapmadan sepete eklediklerini, giriş yaptığında veritabanındaki sepete ekler
     private async Task MergeCartWithDatabase(int userId)
     {
         // Session'da sepet var mı kontrol et
-        var sessionCart = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
+        var sessionCart = SessionHelper.GetObjectFromJson<List<CartItem>>(HttpContext.Session, "Card");
         if (sessionCart == null || !sessionCart.Any())
         {
             // Session sepeti boşsa, sadece veritabanındaki sepeti kullan
@@ -92,11 +155,10 @@ public class AccountController : Controller
             return;
         }
 
-        // Kullanıcının veritabanında sepeti var mı?
         var cart = _cartDal.GetCartByUserId(userId);
         if (cart == null)
         {
-            // Yoksa yeni sepet oluştur
+        
             cart = new Cart
             {
                 UserId = userId,
@@ -130,7 +192,7 @@ public class AccountController : Controller
         }
 
         // Session sepetini temizle, artık veritabanı sepeti kullanılacak
-        SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", new List<CardItem>());
+        SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", new List<CartItem>());
 
         // Sepet eleman sayısını güncelle
         var updatedCartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
@@ -152,12 +214,34 @@ public class AccountController : Controller
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+        
+        // Kullanıcının sipariş sayısını al
+        var orders = _orderDal.GetAll(o => o.UserName == user.UserName)
+            .OrderByDescending(o => o.OrderDate)
+            .ToList();
+        
+        // Son 2 siparişi al
+        var recentOrders = orders.Take(2).ToList();
+        
+        // Kullanıcının adres sayısını al
+        var addresses = _addressDal.GetAddressesByUserId(user.Id);
+        var addressCount = addresses.Count;
 
         var model = new UserProfileViewModel
         {
             UserName = user.UserName,
             Email = user.Email,
-            Roles = roles.ToList()
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhoneNumber = user.PhoneNumber,
+            Roles = roles.ToList(),
+            AddressCount = addressCount,
+            OrderCount = orders.Count,
+            EmailConfirmed = user.EmailConfirmed,
+            PhoneNumberConfirmed = user.PhoneNumberConfirmed,
+            RegistrationDate = user.SecurityStamp != null ? DateTime.Now.AddDays(-30) : null, // Örnek değer
+            LastLoginDate = DateTime.Now.AddDays(-1), // Örnek değer
+            RecentOrders = recentOrders
         };
 
         return View(model);
@@ -182,6 +266,7 @@ public class AccountController : Controller
             var user = new AppUser
             {
                 UserName = model.Username,
+                Email = model.Email,
                 FirstName = model.FirstName,
                 LastName = model.LastName
             };
@@ -212,7 +297,7 @@ public class AccountController : Controller
     {
         // Sepet bilgilerini Session'dan temizle
         SessionHelper.Count = 0;
-        SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", new List<CardItem>());
+        SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", new List<CartItem>());
 
         await _signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
@@ -224,7 +309,7 @@ public class AccountController : Controller
         return View("AccessDenied");
     }
 
-    [Authorize] // Sadece giriş yapmış kullanıcılar erişebilsin
+    [Authorize] 
     public async Task<IActionResult> GetOrders()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -238,5 +323,124 @@ public class AccountController : Controller
             .OrderByDescending(x => x.OrderDate);
 
         return View(orders);
+    }
+
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> EditProfile()
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var model = new EditProfileViewModel
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber
+        };
+
+        return View(model);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        user.FirstName = model.FirstName;
+        user.LastName = model.LastName;
+        
+        // Email değişmişse güncelleme yap
+        if (user.Email != model.Email)
+        {
+            var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
+            if (!setEmailResult.Succeeded)
+            {
+                foreach (var error in setEmailResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return View(model);
+            }
+        }
+        
+        // Telefon numarası değişmişse güncelleme yap
+        if (user.PhoneNumber != model.PhoneNumber)
+        {
+            var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
+            if (!setPhoneResult.Succeeded)
+            {
+                foreach (var error in setPhoneResult.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return View(model);
+            }
+        }
+
+        // Kullanıcıyı kaydet
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            foreach (var error in updateResult.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+
+        TempData["SuccessMessage"] = "Profil bilgileriniz başarıyla güncellendi.";
+        return RedirectToAction("Index");
+    }
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult ChangePassword()
+    {
+        return View(new ChangePasswordViewModel());
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+        if (!changePasswordResult.Succeeded)
+        {
+            foreach (var error in changePasswordResult.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+            return View(model);
+        }
+
+        await _signInManager.RefreshSignInAsync(user);
+        TempData["SuccessMessage"] = "Şifreniz başarıyla değiştirildi.";
+        return RedirectToAction("Index");
     }
 }

@@ -2,6 +2,7 @@ using Business.Concrete;
 using Dal.Abstract;
 using Data.Context;
 using Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dal.Concrete;
 
@@ -27,29 +28,21 @@ public class AddressDal : GenericRepository<Address, ETicaretContext>, IAddressD
     public void SetDefaultAddress(int addressId, int userId)
     {
         using var context = new ETicaretContext();
+        
 
-        // İşlem başlat
         using var transaction = context.Database.BeginTransaction();
-
+        
         try
         {
-            // Önce tüm adresleri bul
-            var userAddresses = context.Addresses.Where(a => a.UserId == userId).ToList();
 
-            // Hepsinin default durumunu false yap
-            foreach (var address in userAddresses)
-            {
-                address.IsDefault = false;
-            }
+            context.Database.ExecuteSqlRaw(
+                "UPDATE Addresses SET IsDefault = 0 WHERE UserId = {0}", userId);
+            
 
-            // Seçilen adresi default yap
-            var defaultAddress = userAddresses.FirstOrDefault(a => a.Id == addressId);
-            if (defaultAddress != null)
-            {
-                defaultAddress.IsDefault = true;
-            }
-
-            context.SaveChanges();
+            context.Database.ExecuteSqlRaw(
+                "UPDATE Addresses SET IsDefault = 1 WHERE Id = {0} AND UserId = {1}", 
+                addressId, userId);
+            
             transaction.Commit();
         }
         catch

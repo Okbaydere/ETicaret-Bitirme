@@ -3,52 +3,62 @@
 @{
     ViewData["Title"] = "Kayıt Ol";
 }
-<h1>Register</h1>
-<hr />
-<hr />
-<form method="post">
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.Email)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.Email, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.FirstName)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.FirstName, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.LastName)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.LastName, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.Username)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.Username, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.Password)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.Password, new { @class = "form-control" })
-        </div>
-    </div>
 
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Ok</button>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">E-posta</label>
+                            <input asp-for="Email" class="form-control" placeholder="ornek@email.com" required />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label">Ad</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Adınız" required />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label">Soyad</label>
+                                <input asp-for="LastName" class="form-control" placeholder="Soyadınız" required />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label">Kullanıcı Adı</label>
+                            <input asp-for="Username" class="form-control" placeholder="Kullanıcı adınız" required />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label">Şifre</label>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Şifreniz" required />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <p class="mb-0">Zaten hesabınız var mı? <a asp-action="Login">Giriş Yap</a></p>
+                </div>
+            </div>
+        </div>
     </div>
-</form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

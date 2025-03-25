@@ -1,21 +1,35 @@
 @model Data.ViewModels.RoleViewModel
 @{
+    ViewData["Title"] = "Yeni Rol";
     Layout = "_Layout";
 }
 
-
-<h1>Create Role</h1>
-<hr/>
-<form method="post">
-    <div class="form-group">
-        <div class="col-md-3">
-            @Html.LabelFor(m => m.Name)
-        </div>
-        <div class="col-md-9">
-            @Html.EditorFor(m => m.Name, new { @class = "form-control" })
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-user-tag me-2"></i> Yeni Rol Oluştur</h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Rol Adı</label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Listeye Dön
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Ok</button>
-    </div>
-</form>
+</div>

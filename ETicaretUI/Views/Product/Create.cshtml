@@ -1,56 +1,126 @@
 @model Data.Entities.Product
+@{
+    ViewData["Title"] = "Yeni Ürün Ekle";
+    Layout = "_Layout";
+}
 
-
-
-<h1>Create</h1>
-
-<h4>Product</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class ="form-control" asp-items="ViewBag.CategoryId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" class="form-control" />
-                <span asp-validation-for="Image" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Stock" class="control-label"></label>
-                <input asp-for="Stock" class="form-control" />
-                <span asp-validation-for="Stock" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Price" class="control-label"></label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsHome" /> @Html.DisplayNameFor(model => model.IsHome)
-                </label>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsApproved" /> @Html.DisplayNameFor(model => model.IsApproved)
-                </label>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i> Yeni Ürün Ekle</h4>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Ürün Adı</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-box"></i></span>
+                            <input asp-for="Name" class="form-control" placeholder="Ürün adını girin" />
+                        </div>
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="CategoryId" class="form-label fw-bold">Kategori</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-tags"></i></span>
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                <option value="">-- Kategori Seçin --</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Price" class="form-label fw-bold">Fiyat</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lira-sign"></i></span>
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Stock" class="form-label fw-bold">Stok</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-cubes"></i></span>
+                            <input asp-for="Stock" class="form-control" type="number" placeholder="0" />
+                        </div>
+                        <span asp-validation-for="Stock" class="text-danger small"></span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="Image" class="form-label fw-bold">Ürün Görseli (URL)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-image"></i></span>
+                        <input asp-for="Image" class="form-control" placeholder="https://..." />
+                    </div>
+                    <span asp-validation-for="Image" class="text-danger small"></span>
+                    <small class="text-muted">Ürün görseli için geçerli bir URL girin</small>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-check card shadow-sm p-3">
+                            <input class="form-check-input" asp-for="IsHome" id="isHome" />
+                            <label class="form-check-label fw-bold" for="isHome">
+                                <i class="fas fa-home text-primary me-1"></i> Anasayfada Göster
+                            </label>
+                            <small class="text-muted d-block mt-1">Ürün anasayfada öne çıkarılır</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-check card shadow-sm p-3">
+                            <input class="form-check-input" asp-for="IsApproved" id="isApproved" checked />
+                            <label class="form-check-label fw-bold" for="isApproved">
+                                <i class="fas fa-check-circle text-success me-1"></i> Satışa Uygun
+                            </label>
+                            <small class="text-muted d-block mt-1">Ürün siteye yayınlanır</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Listeye Dön
+                    </a>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="fas fa-plus me-1"></i> Ürün Ekle
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Stok sıfır olduğunda uyarı göster
+            $("#Stock").change(function() {
+                if ($(this).val() <= 0) {
+                    $(this).addClass("is-warning");
+                    $(this).parent().append('<div class="text-warning small mt-1"><i class="fas fa-exclamation-triangle"></i> Stok sıfır olduğunda ürün pasife alınacaktır.</div>');
+                } else {
+                    $(this).removeClass("is-warning");
+                    $(this).parent().find(".text-warning").remove();
+                }
+            });
+            
+            // Form validation için script
+            $("form").submit(function(e) {
+                if ($("#CategoryId").val() === "") {
+                    alert("Lütfen bir kategori seçin");
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

@@ -1,69 +1,127 @@
 @model Data.Entities.Product
+@{
+    ViewData["Title"] = "Ürün Detayları";
+    Layout = "_Layout";
+}
 
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i> Ürün Detayları</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-5 mb-4 mb-md-0">
+                            <div class="text-center">
+                                @if (!string.IsNullOrEmpty(Model.Image))
+                                {
+                                    <img src="@Model.Image" alt="@Model.Name" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: contain;">
+                                }
+                                else
+                                {
+                                    <img src="~/images/no-image.png" alt="Ürün Görseli Yok" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: contain;">
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h4 class="mb-3 fw-bold">@Model.Name</h4>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-muted">Fiyat:</span>
+                                    <span class="badge bg-primary px-3 py-2 fs-5">@Model.Price.ToString("C2")</span>
+                                </div>
+                                
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            
+                            <dl class="row g-3">
+                                <dt class="col-sm-4">Kategori:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-tag me-1"></i> @(Model.Category?.CategoryName ?? "Kategori Yok")
+                                    </span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Stok Durumu:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.Stock <= 0)
+                                    {
+                                        <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i> Stok Yok</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> @Model.Stock Adet</span>
+                                    }
+                                </dd>
+                                
+                                <dt class="col-sm-4">Durum:</dt>
+                                <dd class="col-sm-8">
+                                    @if (!Model.IsActive)
+                                    {
+                                        <span class="badge bg-danger">Pasif</span>
+                                    }
+                                    else if (Model.IsApproved)
+                                    {
+                                        <span class="badge bg-success">Onaylı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                                    }
+                                </dd>
+                                
+                                <dt class="col-sm-4">Anasayfada:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.IsHome)
+                                    {
+                                        <span class="badge bg-primary"><i class="fas fa-home me-1"></i> Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Hayır</span>
+                                    }
+                                </dd>
+                                
+                                @if (!string.IsNullOrEmpty(Model.Description))
+                                {
+                                    <dt class="col-sm-4">Açıklama:</dt>
+                                    <dd class="col-sm-8">
+                                        <p class="text-muted">@Model.Description</p>
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
 
-<h1>Product Details</h1>
-
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Image)
-        </dt>
-        <dd class="col-sm-10">
-            <img src="@Model.Image" alt="@Model.Name" class="img-thumbnail" style="max-width: 200px;" />
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Stock)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Stock)
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IsHome)
-        </dt>
-        <dd class="col-sm-10">
-            @(Model.IsHome ? "Yes" : "No")
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IsApproved)
-        </dt>
-        <dd class="col-sm-10">
-            @(Model.IsApproved ? "Yes" : "No")
-        </dd>
-        
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Category?.CategoryName
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-warning">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Listeye Dön
+                        </a>
+                        <div>
+                            <a asp-action="Edit" asp-route-id="@Model.ProductId" class="btn btn-primary me-2">
+                                <i class="fas fa-edit me-1"></i> Düzenle
+                            </a>
+                            @if (Model.IsActive)
+                            {
+                                <a asp-action="Delete" asp-route-id="@Model.ProductId" class="btn btn-outline-danger">
+                                    <i class="fas fa-toggle-off me-1"></i> Pasife Al
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Activate" asp-route-id="@Model.ProductId" class="btn btn-outline-success">
+                                    <i class="fas fa-toggle-on me-1"></i> Aktifleştir
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

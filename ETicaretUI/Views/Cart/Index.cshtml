@@ -1,4 +1,4 @@
-@model IEnumerable<Data.ViewModels.CardItem>
+@model IEnumerable<Data.Entities.CartItem>
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Sepetim";
@@ -22,25 +22,25 @@
 
     <!-- Sepet Başlığı -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-shopping-cart me-2 text-primary"></i> Alışveriş Sepetim</h2>
-        <span class="badge bg-primary rounded-pill fs-6">@(hasItems ? Model.Count() : 0) Ürün</span>
+        <h2 class="fw-bold"><i class="fas fa-shopping-cart me-2 text-primary"></i> Alışveriş Sepetim</h2>
+        <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">@(hasItems ? Model.Count() : 0) Ürün</span>
     </div>
 
     <div class="row g-4">
         <!-- Sepet Ürünleri Bölümü -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white py-3">
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-gradient bg-primary text-white py-3">
                     <h5 class="mb-0"><i class="fas fa-shopping-basket me-2"></i> Sepetinizdeki Ürünler</h5>
                 </div>
                 <div class="card-body p-0">
                     @if (!hasItems)
                     {
-                        <div class="p-4 text-center">
-                            <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Boş Sepet" style="width: 100px; opacity: 0.5;" class="mb-3">
-                            <h4>Sepetiniz Boş</h4>
+                        <div class="p-5 text-center">
+                            <img src="https://cdn-icons-png.flaticon.com/512/2038/2038854.png" alt="Boş Sepet" style="width: 120px; opacity: 0.5;" class="mb-4">
+                            <h4 class="fw-bold">Sepetiniz Boş</h4>
                             <p class="text-muted">Sepetinizde henüz ürün bulunmamaktadır.</p>
-                            <a asp-controller="Home" asp-action="List" class="btn btn-primary mt-2">
+                            <a asp-controller="Home" asp-action="List" class="btn btn-primary mt-3 px-4 py-2">
                                 <i class="fas fa-shopping-bag me-2"></i> Alışverişe Başla
                             </a>
                         </div>
@@ -48,57 +48,66 @@
                     else
                     {
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                            <table class="table align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="ps-4">Ürün</th>
-                                        <th>Fiyat</th>
-                                        <th>Adet</th>
-                                        <th>Toplam</th>
-                                        <th class="text-end pe-4">İşlemler</th>
+                                        <th class="ps-4 py-3">Ürün</th>
+                                        <th class="py-3">Fiyat</th>
+                                        <th class="py-3">Adet</th>
+                                        <th class="py-3">Toplam</th>
+                                        <th class="text-end pe-4 py-3">İşlemler</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var item in Model)
                                     {
-                                        <tr>
-                                            <td class="align-middle ps-4">
+                                        <tr class="border-bottom">
+                                            <td class="ps-4 py-3">
                                                 <div class="d-flex align-items-center">
                                                     @if (!string.IsNullOrEmpty(item.Product.Image))
                                                     {
-                                                        <img src="@item.Product.Image" alt="@item.Product.Name" class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                        <div class="rounded-3 overflow-hidden border me-3" style="width: 70px; height: 70px;">
+                                                            <img src="@item.Product.Image" alt="@item.Product.Name" class="w-100 h-100" style="object-fit: cover;">
+                                                        </div>
                                                     }
                                                     else
                                                     {
-                                                        <div class="bg-light d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                                                            <i class="fas fa-image text-muted"></i>
+                                                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center me-3" style="width: 70px; height: 70px;">
+                                                            <i class="fas fa-image text-muted fs-3"></i>
                                                         </div>
                                                     }
                                                     <div>
-                                                        <h6 class="mb-0">@item.Product.Name</h6>
-                                                        <small class="text-muted">@(item.Product.Category?.CategoryName ?? "Kategori Belirtilmemiş")</small>
+                                                        <h6 class="mb-1 fw-bold">@item.Product.Name</h6>
+                                                        @if (item.Product.Category != null)
+                                                        {
+                                                            <span class="badge bg-light text-dark">
+                                                                <i class="fas fa-tag me-1"></i> @item.Product.Category.CategoryName
+                                                            </span>
+                                                        }
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="align-middle fw-bold">@item.Product.Price.ToString("c")</td>
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center">
-                                                    <a href="@Url.Action("Delete", "Cart", new { id = item.Product.ProductId })" class="btn btn-sm btn-outline-secondary rounded-circle">
+                                            <td class="fw-bold py-3">@item.Product.Price.ToString("c")</td>
+                                            <td class="py-3">
+                                                <div class="d-flex align-items-center quantity-control">
+                                                    <a href="@Url.Action("Delete", "Cart", new { id = item.ProductId })" 
+                                                       class="btn btn-sm btn-outline-secondary rounded-circle" title="Azalt">
                                                         <i class="fas fa-minus"></i>
                                                     </a>
-                                                    <span class="mx-2 text-center" style="min-width: 30px;">@item.Quantity</span>
-                                                    <a href="@Url.Action("Buy", "Cart", new { id = item.Product.ProductId })" class="btn btn-sm btn-outline-primary rounded-circle">
+                                                    <span class="mx-3 text-center fw-bold" style="min-width: 30px;">@item.Quantity</span>
+                                                    <a href="@Url.Action("Buy", "Cart", new { id = item.ProductId })" 
+                                                       class="btn btn-sm btn-outline-primary rounded-circle" title="Artır">
                                                         <i class="fas fa-plus"></i>
                                                     </a>
                                                 </div>
                                             </td>
-                                            <td class="align-middle fw-bold text-primary">
+                                            <td class="fw-bold text-primary py-3">
                                                 @((item.Product.Price * item.Quantity).ToString("c"))
                                             </td>
-                                            <td class="align-middle text-end pe-4">
-                                                <a href="@Url.Action("RemoveAll", "Cart", new { id = item.Product.ProductId })"
-                                                   class="btn btn-sm btn-outline-danger" title="Ürünü Sepetten Kaldır">
-                                                    <i class="fas fa-trash-alt"></i>
+                                            <td class="text-end pe-4 py-3">
+                                                <a href="@Url.Action("RemoveAll", "Cart", new { id = item.ProductId })"
+                                                   class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Ürünü Sepetten Kaldır">
+                                                    <i class="fas fa-trash-alt me-1"></i> Kaldır
                                                 </a>
                                             </td>
                                         </tr>
@@ -107,9 +116,9 @@
                             </table>
                         </div>
 
-                        <div class="p-3 border-top">
-                            <a asp-action="List" asp-controller="Home" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> Alışverişe Devam Et
+                        <div class="p-4 bg-light border-top">
+                            <a asp-action="List" asp-controller="Home" class="btn btn-outline-primary rounded-pill px-4">
+                                <i class="fas fa-arrow-left me-2"></i> Alışverişe Devam Et
                             </a>
                         </div>
                     }
@@ -121,33 +130,58 @@
         @if (hasItems)
         {
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm sticky-lg-top" style="top: 20px;">
-                    <div class="card-header bg-primary text-white py-3">
+                <div class="card border-0 shadow-sm rounded-3 sticky-lg-top" style="top: 20px; z-index: 100;">
+                    <div class="card-header bg-gradient bg-primary text-white py-3">
                         <h5 class="mb-0"><i class="fas fa-receipt me-2"></i> Sipariş Özeti</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Ara Toplam</span>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Ürünler (@Model.Count())</span>
                             <span>@total.ToString("c")</span>
                         </div>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Kargo</span>
-                            <span class="text-success">Ücretsiz</span>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Kargo</span>
+                            <span class="text-success fw-bold">Ücretsiz</span>
                         </div>
                         <hr>
-                        <div class="d-flex justify-content-between mb-4">
-                            <span class="fw-bold">Toplam</span>
-                            <span class="fw-bold text-primary fs-5">@total.ToString("c")</span>
+                        <div class="d-flex justify-content-between my-4">
+                            <span class="fw-bold fs-5">Toplam</span>
+                            <span class="fw-bold text-primary fs-4">@total.ToString("c")</span>
                         </div>
-                        <a asp-action="Checkout" asp-controller="Cart" class="btn btn-success w-100 py-2">
-                            <i class="fas fa-check me-2"></i> Alışverişi Tamamla
+                        <a asp-action="Checkout" asp-controller="Cart" class="btn btn-success w-100 py-3 rounded-pill fw-bold">
+                            <i class="fas fa-check me-2"></i> Siparişi Tamamla
                         </a>
-                        <p class="text-muted small text-center mt-3 mb-0">
-                            <i class="fas fa-lock me-1"></i> Güvenli ödeme, %100 müşteri memnuniyeti garantisi
-                        </p>
+                        <div class="d-flex flex-column align-items-center justify-content-center mt-4">
+                            <div class="d-flex mb-2">
+                                <span class="badge bg-light text-dark me-2 p-2"><i class="fas fa-lock text-success"></i></span>
+                                <span class="badge bg-light text-dark me-2 p-2"><i class="fab fa-cc-visa"></i></span>
+                                <span class="badge bg-light text-dark me-2 p-2"><i class="fab fa-cc-mastercard"></i></span>
+                                <span class="badge bg-light text-dark p-2"><i class="fab fa-cc-paypal"></i></span>
+                            </div>
+                            <p class="text-muted small text-center mb-0">
+                                <i class="fas fa-shield-alt me-1 text-success"></i> Güvenli ödeme, %100 müşteri memnuniyeti garantisi
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         }
     </div>
 </div>
+
+<style>
+    .quantity-control .btn {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    
+    .quantity-control .btn:hover {
+        transform: scale(1.1);
+    }
+    
+
+</style>

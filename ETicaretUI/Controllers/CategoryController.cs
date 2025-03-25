@@ -2,11 +2,13 @@ using Dal.Abstract;
 using Data.Context;
 using Data.Entities;
 using ETicaretUI.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ETicaretUI.Controllers;
 
+[Authorize(Roles = "Admin")]
 public class CategoryController : Controller
 {
     private readonly ETicaretContext _context;
@@ -66,7 +68,9 @@ public class CategoryController : Controller
             return RedirectToAction("Error", "Home");
         }
 
-        var category = await _context.Categories.FindAsync(id);
+        var category = await _context.Categories
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(m => m.Id == id);
 
         if (category == null)
         {
@@ -77,18 +81,56 @@ public class CategoryController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName,Description")] Category category)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName,Description,IsActive")] Category category)
     {
         if (id != category.Id)
         {
             return RedirectToAction("Error", "Home");
         }
 
+        // Kategorideki ürünleri kontrol et
+        var existingCategory = await _context.Categories
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (existingCategory == null)
+        {
+            return NotFound();
+        }
+
+        // Eğer kategoride ürün varsa ve aktiflik durumu false olarak değiştirilmek isteniyorsa
+        if (existingCategory.Products != null && existingCategory.Products.Any() && 
+            existingCategory.IsActive && !category.IsActive)
+        {
+            ModelState.AddModelError("IsActive", "Bu kategoride ürün bulunduğu için aktiflik durumunu kapatılamazsınız. Önce kategorideki ürünleri başka bir kategoriye taşıyın veya silin.");
+            return View(category);
+        }
+
         if (ModelState.IsValid)
         {
-            _context.Update(category);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                // Sadece güncellenen alanları mevcut kategoriye uygula
+                existingCategory.CategoryName = category.CategoryName;
+                existingCategory.Description = category.Description;
+                existingCategory.IsActive = category.IsActive;
+                
+                _context.Update(existingCategory);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla güncellendi.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CategoryExists(category.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         return View(category);

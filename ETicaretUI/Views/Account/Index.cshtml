@@ -1,0 +1,186 @@
+@model Data.ViewModels.UserProfileViewModel
+@using Data.ViewModels
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i> Profil Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    <div class="text-center mb-4">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <span class="avatar-initials">@(string.IsNullOrEmpty(Model.FirstName) ? Model.UserName.Substring(0, 1).ToUpper() : Model.FirstName.Substring(0, 1).ToUpper() + Model.LastName.Substring(0, 1).ToUpper())</span>
+                        </div>
+                        <h5 class="mb-0">@Model.FirstName @Model.LastName</h5>
+                        <p class="text-muted">@Model.UserName</p>
+                        <div class="badge bg-primary mb-2">
+                            @(Model.Roles.FirstOrDefault())
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-envelope me-2"></i> E-posta</span>
+                            <span>@Model.Email</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-phone me-2"></i> Telefon</span>
+                            <span>@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Belirtilmemiş" : Model.PhoneNumber)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-calendar-alt me-2"></i> Kayıt Tarihi</span>
+                            <span>@(Model.RegistrationDate.HasValue ? Model.RegistrationDate.Value.ToString("dd.MM.yyyy") : "Belirtilmemiş")</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-clock me-2"></i> Son Giriş</span>
+                            <span>@(Model.LastLoginDate.HasValue ? Model.LastLoginDate.Value.ToString("dd.MM.yyyy HH:mm") : "Belirtilmemiş")</span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-4">
+                        <a asp-action="EditProfile" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-edit me-2"></i> Profili Düzenle
+                        </a>
+                        <a asp-action="ChangePassword" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-key me-2"></i> Şifre Değiştir
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+     
+        </div>
+
+        <div class="col-md-8">
+            <!-- Hesap Özeti -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-chart-pie me-2"></i> Hesap Özeti</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-primary mb-2">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                    <h5 class="card-title">Siparişler</h5>
+                                    <p class="fs-4 fw-bold text-primary">@Model.OrderCount</p>
+                                    <a asp-controller="Account" asp-action="GetOrders" class="btn btn-sm btn-outline-primary">Tüm Siparişlerim</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body text-center">
+                                    <div class="fs-1 text-primary mb-2">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <h5 class="card-title">Adresler</h5>
+                                    <p class="fs-4 fw-bold text-primary">@Model.AddressCount</p>
+                                    <a asp-controller="Address" asp-action="Index" class="btn btn-sm btn-outline-primary">Adreslerim</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Son Siparişler -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-history me-2"></i> Son Siparişler</h4>
+                    <a asp-controller="Account" asp-action="GetOrders" class="btn btn-sm btn-light">
+                        <i class="fas fa-list me-1"></i> Tümünü Gör
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.OrderCount == 0)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Henüz sipariş bulunmamaktadır.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Tarih</th>
+                                        <th>Tutar</th>
+                                        <th>Durum</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.RecentOrders)
+                                    {
+                                        <tr>
+                                            <td>#@order.OrderNumber</td>
+                                            <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                            <td>@order.Total.ToString("C2")</td>
+                                            <td>
+                                                @switch (order.OrderState)
+                                                {
+                                                    case EnumOrderState.Waiting:
+                                                        <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                                                        break;
+                                                    case EnumOrderState.Completed:
+                                                        <span class="badge bg-success">Tamamlandı</span>
+                                                        break;
+                                                    case EnumOrderState.Canceled:
+                                                        <span class="badge bg-danger">İptal Edildi</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">Belirtilmemiş</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Order" asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .avatar-initials {
+        color: white;
+        font-size: 42px;
+        font-weight: bold;
+    }
+</style>

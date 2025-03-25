@@ -1,0 +1,114 @@
+@model Data.ViewModels.DeleteRoleViewModel
+@{
+    ViewData["Title"] = "Rol Sil";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm @(Model.HasUsers ? "border-warning" : "border-danger")">
+                <div class="card-header @(Model.HasUsers ? "bg-warning" : "bg-danger") text-white py-3">
+                    <h3 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Rol Silme Onayı</h3>
+                </div>
+                <div class="card-body p-4">
+                    @if (Model.HasUsers)
+                    {
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i> Dikkat!</h5>
+                            <p>
+                                <strong>"@Model.RoleName"</strong> rolüne sahip <strong>@Model.UsersInRole.Count kullanıcı</strong> bulunmaktadır.
+                                Bu rolü sildiğinizde, bu kullanıcılar bu rolden çıkarılacaktır.
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i> Bilgi</h5>
+                            <p>
+                                <strong>"@Model.RoleName"</strong> rolüne sahip hiçbir kullanıcı bulunmamaktadır.
+                                Bu rolü güvenle silebilirsiniz.
+                            </p>
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <h5 class="mb-3">Rol Bilgileri</h5>
+                        <dl class="row">
+                            <dt class="col-sm-4">Rol ID:</dt>
+                            <dd class="col-sm-8">@Model.RoleId</dd>
+
+                            <dt class="col-sm-4">Rol Adı:</dt>
+                            <dd class="col-sm-8">@Model.RoleName</dd>
+
+                            <dt class="col-sm-4">Kullanıcı Sayısı:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.HasUsers)
+                                {
+                                    <span class="badge bg-warning text-dark">@Model.UsersInRole.Count Kullanıcı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">0 Kullanıcı</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+
+                    @if (Model.HasUsers)
+                    {
+                        <div class="mt-3">
+                            <h5 class="mb-3">Bu Role Sahip Kullanıcılar</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover table-striped">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Kullanıcı Adı</th>
+                                            <th>Ad Soyad</th>
+                                            <th>E-posta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var user in Model.UsersInRole)
+                                        {
+                                            <tr>
+                                                <td>@user.UserName</td>
+                                                <td>@user.FirstName @user.LastName</td>
+                                                <td>@user.Email</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Vazgeç
+                        </a>
+                        
+                        <form asp-action="DeleteConfirmed" method="post">
+                            <input type="hidden" name="id" value="@Model.RoleId" />
+                            
+                            @if (Model.HasUsers)
+                            {
+                                <div class="form-check mb-3 text-end">
+                                    <input type="checkbox" id="removeUsersFromRole" name="removeUsersFromRole" class="form-check-input" value="true" required />
+                                    <label for="removeUsersFromRole" class="form-check-label">
+                                        Tüm kullanıcıları bu rolden çıkarmayı onaylıyorum
+                                    </label>
+                                </div>
+                            }
+                            
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-1"></i> Rolü Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

@@ -16,12 +16,14 @@ public class Order
     public int? AddressId { get; set; }
     public virtual Address Address { get; set; }
 
-    // Eğer adres silinirse veya sepette adressiz sipariş oluşturulursa diye
+   
     public string AddressTitle { get; set; }
     public string AddressText { get; set; }
     public string City { get; set; }
 
     public virtual List<OrderLine> OrderLines { get; set; }
+    
+    public bool IsActive { get; set; } = true;
 
     public Order()
     {

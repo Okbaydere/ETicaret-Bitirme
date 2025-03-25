@@ -18,4 +18,6 @@ public class Address
     public virtual AppUser User { get; set; }
 
     public bool IsDefault { get; set; }
+    
+    public bool IsActive { get; set; } = true; 
 }

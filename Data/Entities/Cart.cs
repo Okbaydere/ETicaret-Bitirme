@@ -14,6 +14,8 @@ public class Cart
     public DateTime CreatedDate { get; set; }
 
     public virtual List<CartItem> CartItems { get; set; }
+    
+    public bool IsActive { get; set; } = true;
 
     public Cart()
     {

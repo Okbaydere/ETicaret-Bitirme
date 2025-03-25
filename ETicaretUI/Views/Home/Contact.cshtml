@@ -1,0 +1,109 @@
+@{
+    ViewData["Title"] = "İletişim | ETicaret";
+}
+
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-lg-12 text-center">
+            <h1 class="display-4 fw-bold">İletişim</h1>
+            <p class="lead text-muted">Bizimle iletişime geçin, sorularınızı yanıtlayalım.</p>
+            <hr class="my-4">
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">Bize Ulaşın</h3>
+                    <form>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Adınız Soyadınız</label>
+                            <input type="text" class="form-control" id="name" placeholder="Adınız Soyadınız">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-Posta Adresiniz</label>
+                            <input type="email" class="form-control" id="email" placeholder="ornek@email.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Konu</label>
+                            <select class="form-select" id="subject">
+                                <option selected disabled>Lütfen bir konu seçin</option>
+                                <option value="siparis">Sipariş Durumu</option>
+                                <option value="iade">İade ve Değişim</option>
+                                <option value="urun">Ürün Bilgisi</option>
+                                <option value="oneri">Öneri ve Şikayet</option>
+                                <option value="diger">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="message" class="form-label">Mesajınız</label>
+                            <textarea class="form-control" id="message" rows="5" placeholder="Mesajınızı buraya yazın..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Mesajı Gönder
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h3 class="mb-4">İletişim Bilgilerimiz</h3>
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-map-marker-alt text-primary me-2"></i>Adresimiz</h5>
+                        <p class="ms-4 text-muted">
+                            ETicaret Plaza, Atatürk Bulvarı No:123<br>
+                            Kavaklıdere, Ankara, Türkiye
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-phone text-primary me-2"></i>Telefon</h5>
+                        <p class="ms-4 text-muted">
+                            Müşteri Hizmetleri: +90 (212) 123 45 67<br>
+                            Teknik Destek: +90 (212) 123 45 68
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-envelope text-primary me-2"></i>E-Posta</h5>
+                        <p class="ms-4 text-muted">
+                            Genel Bilgi: info@eticaret.com<br>
+                            Destek: destek@eticaret.com<br>
+                            İş Birliği: partnership@eticaret.com
+                        </p>
+                    </div>
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-clock text-primary me-2"></i>Çalışma Saatleri</h5>
+                        <p class="ms-4 text-muted">
+                            Pazartesi - Cuma: 09:00 - 18:00<br>
+                            Cumartesi: 10:00 - 15:00<br>
+                            Pazar: Kapalı
+                        </p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="#" class="btn btn-outline-primary btn-lg rounded-circle mx-2"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="btn btn-outline-primary btn-lg rounded-circle mx-2"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-primary btn-lg rounded-circle mx-2"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="btn btn-outline-primary btn-lg rounded-circle mx-2"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <!-- Google Harita Embed kodu buraya eklenebilir -->
+                    <div class="ratio ratio-21x9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d49153.796279785!2d32.80575747302346!3d39.90905572068278!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14d34f190a9cea8f%3A0xd3862ea8248d08a0!2sAnkara%2C%20T%C3%BCrkiye!5e0!3m2!1str!2s!4v1651234567890!5m2!1str!2s" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

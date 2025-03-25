@@ -1,33 +1,41 @@
 @model System.Collections.Generic.List<Data.Entities.Category>
 
 <ul class="list-group rounded-3 overflow-hidden">
-    @if (ViewBag.Id == 0)
+    @{
+        // Toplam aktif ürün sayısını hesapla
+        int totalActiveProducts = Model.Sum(c => c.Products?.Count(p => p.IsActive && p.IsApproved) ?? 0);
+    }
+    
+    @if (ViewBag.Id == null || ViewBag.Id == 0)
     {
-        <a class="list-group-item active d-flex align-items-center" href="@Url.Action("List", "Home", new { page = 1 })">
+        <a class="list-group-item active d-flex align-items-center" href="@Url.Action("List", "Home", new { id = (int?)null, page = 1 })">
             <i class="fas fa-th-large me-2"></i>
             <span>Tüm Kategoriler</span>
-            <span class="ms-auto badge bg-white text-primary rounded-pill">@Model.Count</span>
+            <span class="ms-auto badge bg-white text-primary rounded-pill">@totalActiveProducts</span>
         </a>
     }
     else
     {
-        <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { page = 1 })">
+        <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { id = (int?)null, page = 1 })">
             <i class="fas fa-th-large me-2"></i>
             <span>Tüm Kategoriler</span>
-            <span class="ms-auto badge bg-light text-dark rounded-pill">@Model.Count</span>
+            <span class="ms-auto badge bg-light text-dark rounded-pill">@totalActiveProducts</span>
         </a>
     }
 
     @foreach (var category in Model)
     {
-        if (ViewBag.Id != 0)
+        // Kategorideki aktif ve onaylanmış ürünleri say
+        int activeProductCount = category.Products?.Count(p => p.IsActive && p.IsApproved) ?? 0;
+        
+        if (ViewBag.Id != null && ViewBag.Id != 0)
         {
             if (category.Id == ViewBag.Id)
             {
                 <a class="list-group-item active d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
                     <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
                     <span>@category.CategoryName</span>
-                    <span class="ms-auto badge bg-white text-primary rounded-pill">@(category.Products?.Count ?? 0)</span>
+                    <span class="ms-auto badge bg-white text-primary rounded-pill">@activeProductCount</span>
                 </a>
             }
             else
@@ -35,7 +43,7 @@
                 <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
                     <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
                     <span>@category.CategoryName</span>
-                    <span class="ms-auto badge bg-light text-dark rounded-pill">@(category.Products?.Count ?? 0)</span>
+                    <span class="ms-auto badge bg-light text-dark rounded-pill">@activeProductCount</span>
                 </a>
             }
         }
@@ -44,7 +52,7 @@
             <a class="list-group-item d-flex align-items-center" href="@Url.Action("List", "Home", new { id = category.Id, page = 1 })">
                 <i class="@GetCategoryIcon(category.CategoryName) me-2"></i>
                 <span>@category.CategoryName</span>
-                <span class="ms-auto badge bg-light text-dark rounded-pill">@(category.Products?.Count ?? 0)</span>
+                <span class="ms-auto badge bg-light text-dark rounded-pill">@activeProductCount</span>
             </a>
         }
     }

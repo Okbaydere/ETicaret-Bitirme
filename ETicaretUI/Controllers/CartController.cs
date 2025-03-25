@@ -48,106 +48,84 @@ public class CartController : Controller
                     var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
                     if (cartItems.Any())
                     {
-                        // CartItem'ları CardItem'a dönüştür (View için)
-                        var cardItems = cartItems.Select(ci => new CardItem
-                        {
-                            Product = ci.Product,
-                            Quantity = ci.Quantity
-                        }).ToList();
-
                         ViewBag.Total = cartItems.Sum(x => x.Product.Price * x.Quantity).ToString("c");
                         SessionHelper.Count = cartItems.Count;
-                        return View(cardItems);
+                        return View(cartItems);
                     }
                 }
 
-                return View(new List<CardItem>());
+                return View(new List<CartItem>());
             }
         }
 
-        // Kullanıcı giriş yapmamışsa session'daki sepeti göster (eski davranış)
-        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-        if (card == null)
-        {
-            return View(new List<CardItem>());
-        }
-
-        ViewBag.Total = card.Sum(x => x.Product.Price * x.Quantity).ToString("c");
-        SessionHelper.Count = card.Count;
-        return View(card);
+        // Session tabanlı sepeti tamamen kaldırıyoruz
+        return RedirectToAction("Login", "Account");
     }
 
     public async Task<IActionResult> Buy(int id)
     {
-        if (User.Identity.IsAuthenticated)
+        if (!User.Identity.IsAuthenticated)
         {
-            // Kullanıcı giriş yapmışsa veritabanındaki sepete ekle
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
+            // Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
+            return RedirectToAction("Login", "Account");
+        }
+
+        // Ürünü getir ve stok kontrolü yap
+        var product = _productDal.Get(id);
+        if (product == null)
+        {
+            TempData["Error"] = "Ürün bulunamadı.";
+            return RedirectToAction("Index");
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
+        {
+            var cart = _cartDal.GetCartByUserId(user.Id);
+            if (cart == null)
             {
-                var cart = _cartDal.GetCartByUserId(user.Id);
-                if (cart == null)
+                // Kullanıcının sepeti yoksa yeni sepet oluştur
+                cart = new Cart
                 {
-                    // Kullanıcının sepeti yoksa yeni sepet oluştur
-                    cart = new Cart
-                    {
-                        UserId = user.Id,
-                        CreatedDate = DateTime.Now
-                    };
-                    _cartDal.Add(cart);
-                }
+                    UserId = user.Id,
+                    CreatedDate = DateTime.Now
+                };
+                _cartDal.Add(cart);
+            }
 
-                // Ürün sepette var mı kontrol et
-                var existingItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == id);
-                if (existingItem != null)
-                {
-                    // Varsa adetini artır
-                    existingItem.Quantity++;
-                    _cartItemDal.Update(existingItem);
-                }
-                else
-                {
-                    // Yoksa yeni ekle
-                    var product = _productDal.Get(id);
-                    var cartItem = new CartItem
-                    {
-                        CartId = cart.Id,
-                        ProductId = id,
-                        Quantity = 1,
-                        DateAdded = DateTime.Now
-                    };
-                    _cartItemDal.Add(cartItem);
-                }
-
-                // Sepet eleman sayısını güncelle
-                var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                SessionHelper.Count = cartItems.Count;
-
+            // Ürün sepette var mı kontrol et
+            var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+            var existingItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
+            
+            // Mevcut sepetteki adet + eklenecek yeni adet için stok kontrolü
+            int currentQuantity = existingItem?.Quantity ?? 0;
+            
+            if (currentQuantity + 1 > product.Stock)
+            {
+                TempData["Error"] = $"Üzgünüz, '{product.Name}' ürününden yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}";
                 return RedirectToAction("Index");
             }
-        }
-
-        // Kullanıcı giriş yapmamışsa session'a ekle (eski davranış)
-        if (SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card") == null)
-        {
-            var card = new List<CardItem>();
-            card.Add(new CardItem { Product = _productDal.Get(id), Quantity = 1 });
-            SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
-        }
-        else
-        {
-            var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-            int index = IsExist(card, id);
-            if (index < 0)
+            
+            if (existingItem != null)
             {
-                card.Add(new CardItem { Product = _productDal.Get(id), Quantity = 1 });
+                existingItem.Quantity++;
+                _cartItemDal.Update(existingItem);
             }
             else
             {
-                card[index].Quantity++;
+                var cartItem = new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = id,
+                    Quantity = 1,
+                    DateAdded = DateTime.Now
+                };
+                _cartItemDal.Add(cartItem);
             }
 
-            SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+            // Sepet eleman sayısını güncelle
+            cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+            SessionHelper.Count = cartItems.Count;
         }
 
         return RedirectToAction("Index");
@@ -155,54 +133,46 @@ public class CartController : Controller
 
     public async Task<IActionResult> Delete(int id)
     {
-        if (User.Identity.IsAuthenticated)
+        if (!User.Identity.IsAuthenticated)
         {
-            // Kullanıcı giriş yapmışsa veritabanındaki sepetten sil
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                var cart = _cartDal.GetCartByUserId(user.Id);
-                if (cart != null)
-                {
-                    var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == id);
-                    if (cartItem != null)
-                    {
-                        if (cartItem.Quantity > 1)
-                        {
-                            // Birden fazla adet varsa azalt
-                            cartItem.Quantity--;
-                            _cartItemDal.Update(cartItem);
-                        }
-                        else
-                        {
-                            // Tek adet kaldıysa tamamen sil
-                            _cartItemDal.Delete(cartItem);
-                        }
-
-                        // Sepet eleman sayısını güncelle
-                        var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                        SessionHelper.Count = cartItems.Count;
-                    }
-                }
-
-                return RedirectToAction("Index");
-            }
+            return RedirectToAction("Login", "Account");
         }
 
-        // Kullanıcı giriş yapmamışsa session'dan sil (eski davranış)
-        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-        if (card != null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
         {
-            int index = IsExist(card, id);
-            if (index >= 0)
+            var cart = _cartDal.GetCartByUserId(user.Id);
+            if (cart != null)
             {
-                card[index].Quantity--;
-                if (card[index].Quantity == 0)
+                var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+                var cartItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
+                
+                if (cartItem != null)
                 {
-                    card.RemoveAt(index);
-                }
+                    if (cartItem.Quantity > 1)
+                    {
+                        // Birden fazla adet varsa azalt
+                        cartItem.Quantity--;
+                        _cartItemDal.Update(cartItem);
+                    }
+                    else
+                    {
+                        // Tek adet kaldıysa tamamen sil (hard-delete)
+                        using (var context = new Data.Context.ETicaretContext())
+                        {
+                            var itemToDelete = context.CartItems.Find(cartItem.Id);
+                            if (itemToDelete != null)
+                            {
+                                context.CartItems.Remove(itemToDelete);
+                                context.SaveChanges();
+                            }
+                        }
+                    }
 
-                SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+                    // Sepet eleman sayısını güncelle
+                    cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+                    SessionHelper.Count = cartItems.Count;
+                }
             }
         }
 
@@ -211,157 +181,139 @@ public class CartController : Controller
 
     public async Task<IActionResult> Checkout()
     {
-        List<CardItem> items = new List<CardItem>();
-
-        if (User.Identity.IsAuthenticated)
+        if (!User.Identity.IsAuthenticated)
         {
-            // Kullanıcı giriş yapmışsa veritabanındaki sepeti kullan
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                var cart = _cartDal.GetCartByUserId(user.Id);
-                if (cart != null)
-                {
-                    var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                    items = cartItems.Select(ci => new CardItem
-                    {
-                        Product = ci.Product,
-                        Quantity = ci.Quantity
-                    }).ToList();
-
-                    // Kullanıcının kayıtlı adreslerini getir
-                    var addresses = _addressDal.GetAddressesByUserId(user.Id);
-                    ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
-                    ViewBag.HasAddresses = addresses.Any();
-
-                    // Kullanıcı adını otomatik doldur
-                    var model = new ShippingDetails { UserName = user.UserName };
-
-                    // Varsayılan adresi varsa seç
-                    var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault);
-                    if (defaultAddress != null)
-                    {
-                        model.AddressId = defaultAddress.Id;
-                        model.AddressTitle = defaultAddress.Title;
-                        model.Address = defaultAddress.FullAddress;
-                        model.City = defaultAddress.City;
-                    }
-
-                    if (items.Count == 0)
-                    {
-                        TempData["Error"] = "Sepetinizde ürün bulunmamaktadır";
-                        return RedirectToAction("Index");
-                    }
-
-                    return View(model);
-                }
-            }
-        }
-        else
-        {
-            // Kullanıcı giriş yapmamışsa session'daki sepeti kullan
-            items = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card") ??
-                    new List<CardItem>();
+            return RedirectToAction("Login", "Account");
         }
 
-        if (items.Count == 0)
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var cart = _cartDal.GetCartByUserId(user.Id);
+        if (cart == null || !cart.CartItems.Any())
         {
             TempData["Error"] = "Sepetinizde ürün bulunmamaktadır";
             return RedirectToAction("Index");
         }
 
-        return View(new ShippingDetails());
+        var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+        
+        // Kullanıcının kayıtlı adreslerini getir
+        var addresses = _addressDal.GetAddressesByUserId(user.Id);
+        ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
+        ViewBag.HasAddresses = addresses.Any();
+
+        // Kullanıcı adını otomatik doldur
+        var model = new ShippingDetails { UserName = user.UserName };
+
+        // Varsayılan adresi varsa seç
+        var defaultAddress = addresses.FirstOrDefault(a => a.IsDefault);
+        if (defaultAddress != null)
+        {
+            model.AddressId = defaultAddress.Id;
+            model.AddressTitle = defaultAddress.Title;
+            model.Address = defaultAddress.FullAddress;
+            model.City = defaultAddress.City;
+        }
+
+        return View(model);
     }
 
     [HttpPost]
     public async Task<IActionResult> Checkout(ShippingDetails details)
     {
-        List<CardItem> items = new List<CardItem>();
-
-        if (User.Identity.IsAuthenticated)
+        if (!User.Identity.IsAuthenticated)
         {
-            // Kullanıcı giriş yapmışsa veritabanındaki sepeti kullan
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                var cart = _cartDal.GetCartByUserId(user.Id);
-                if (cart != null)
-                {
-                    var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                    items = cartItems.Select(ci => new CardItem
-                    {
-                        Product = ci.Product,
-                        Quantity = ci.Quantity
-                    }).ToList();
-
-                    // Kullanıcının kayıtlı adreslerini getir (validation hatası durumunda tekrar göstermek için)
-                    var addresses = _addressDal.GetAddressesByUserId(user.Id);
-                    ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
-                    ViewBag.HasAddresses = addresses.Any();
-
-                    // Eğer kayıtlı adres seçilmişse, adres bilgilerini al
-                    if (details.UseSelectedAddress && details.AddressId.HasValue)
-                    {
-                        var selectedAddress = _addressDal.Get(details.AddressId.Value);
-                        if (selectedAddress != null && selectedAddress.UserId == user.Id)
-                        {
-                            details.AddressTitle = selectedAddress.Title;
-                            details.Address = selectedAddress.FullAddress;
-                            details.City = selectedAddress.City;
-
-                            // Model validation'ı atla, adres bilgileri zaten doğru
-                            ModelState.Remove("AddressTitle");
-                            ModelState.Remove("Address");
-                            ModelState.Remove("City");
-                        }
-                    }
-
-                    // Kullanıcı adını otomatik doldur
-                    details.UserName = user.UserName;
-                    ModelState.Remove("UserName");
-                }
-            }
-        }
-        else
-        {
-            // Kullanıcı giriş yapmamışsa session'daki sepeti kullan
-            items = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card") ??
-                    new List<CardItem>();
+            return RedirectToAction("Login", "Account");
         }
 
-        if (items.Count == 0)
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        var cart = _cartDal.GetCartByUserId(user.Id);
+        if (cart == null)
         {
             ModelState.AddModelError("", "Sepetinizde ürün bulunmamaktadır");
             return RedirectToAction("Index");
         }
 
+        var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+        if (!cartItems.Any())
+        {
+            ModelState.AddModelError("", "Sepetinizde ürün bulunmamaktadır");
+            return RedirectToAction("Index");
+        }
+
+        // Sepetteki ürünlerin güncel stok durumunu kontrol et
+        foreach (var item in cartItems)
+        {
+            var product = _productDal.Get(item.ProductId);
+            if (product == null || product.Stock < item.Quantity)
+            {
+                string errorMessage = product == null 
+                    ? "Sepetinizdeki bazı ürünler artık mevcut değil" 
+                    : $"'{product.Name}' için yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}, Sepetteki adet: {item.Quantity}";
+                
+                TempData["Error"] = errorMessage;
+                return RedirectToAction("Index");
+            }
+        }
+
+        // Kullanıcının kayıtlı adreslerini getir (validation hatası durumunda tekrar göstermek için)
+        var addresses = _addressDal.GetAddressesByUserId(user.Id);
+        ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
+        ViewBag.HasAddresses = addresses.Any();
+
+        // Eğer kayıtlı adres seçilmişse, adres bilgilerini al
+        if (details.UseSelectedAddress && details.AddressId.HasValue)
+        {
+            var selectedAddress = _addressDal.Get(details.AddressId.Value);
+            if (selectedAddress != null && selectedAddress.UserId == user.Id)
+            {
+                details.AddressTitle = selectedAddress.Title;
+                details.Address = selectedAddress.FullAddress;
+                details.City = selectedAddress.City;
+
+                // Model validation'ı atla, adres bilgileri zaten doğru
+                ModelState.Remove("AddressTitle");
+                ModelState.Remove("Address");
+                ModelState.Remove("City");
+            }
+        }
+
+        // Kullanıcı adını otomatik doldur
+        details.UserName = user.UserName;
+        ModelState.Remove("UserName");
+
         if (ModelState.IsValid)
         {
-            SaveOrder(items, details);
-
-            if (User.Identity.IsAuthenticated)
+            try
             {
-                // Kullanıcı giriş yapmışsa sepeti temizle
-                var user = await _userManager.GetUserAsync(User);
-                if (user != null)
-                {
-                    var cart = _cartDal.GetCartByUserId(user.Id);
-                    if (cart != null)
-                    {
-                        _cartDal.ClearCart(cart.Id);
-                        SessionHelper.Count = 0;
-                    }
-                }
-            }
-            else
-            {
-                // Kullanıcı giriş yapmamışsa session'daki sepeti temizle
-                var card = new List<CardItem>();
-                SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+                SaveOrder(cartItems, details);
+                
+                // Sepeti temizle
+                _cartDal.ClearCart(cart.Id);
                 SessionHelper.Count = 0;
-            }
 
-            return RedirectToAction("OrderCompleted");
+                return RedirectToAction("OrderCompleted");
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Stok hatası durumunda
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Index");
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Siparişiniz işlenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.";
+                return RedirectToAction("Index");
+            }
         }
 
         return View(details);
@@ -372,7 +324,7 @@ public class CartController : Controller
         return View();
     }
 
-    private void SaveOrder(List<CardItem> items, ShippingDetails details)
+    private void SaveOrder(List<CartItem> items, ShippingDetails details)
     {
         var guid = Guid.NewGuid().ToString("N");
         var order = new Order();
@@ -395,65 +347,75 @@ public class CartController : Controller
 
         foreach (var item in items)
         {
+            // Stok kontrolü yap
+            var product = _productDal.Get(item.ProductId);
+            if (product != null)
+            {
+                if (product.Stock < item.Quantity)
+                {
+                    throw new InvalidOperationException($"Ürün '{product.Name}' için yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}, Sepetteki adet: {item.Quantity}");
+                }
+                
+                // Ürün stoğunu azalt
+                product.Stock -= item.Quantity;
+                _productDal.Update(product);
+                
+                // Stok sıfır olduğunda ürünü deaktif et (soft delete)
+                if (product.Stock <= 0)
+                {
+                    _productDal.CheckAndDeactivateProduct(product.ProductId);
+                }
+            }
+            
             var orderLine = new OrderLine();
             orderLine.Quantity = item.Quantity;
-            orderLine.ProductId = item.Product.ProductId;
-            order.OrderLines.Add(orderLine);
+            orderLine.ProductId = item.ProductId;
             orderLine.Price = item.Product.Price * item.Quantity;
+            
+            // Ürün bilgilerini kaydet, böylece ürün silinse bile sipariş detaylarında görünecek
+            orderLine.ProductName = item.Product.Name;
+            orderLine.ProductImage = item.Product.Image;
+            
+            order.OrderLines.Add(orderLine);
         }
 
         _orderDal.Add(order);
     }
 
-    private int IsExist(List<CardItem> card, int id)
-    {
-        for (int i = 0; i < card.Count; i++)
-        {
-            if (card[i].Product.ProductId.Equals(id))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
     public async Task<IActionResult> RemoveAll(int id)
     {
-        if (User.Identity.IsAuthenticated)
+        if (!User.Identity.IsAuthenticated)
         {
-            // Kullanıcı giriş yapmışsa veritabanındaki sepetten ürünü tamamen sil
-            var user = await _userManager.GetUserAsync(User);
-            if (user != null)
-            {
-                var cart = _cartDal.GetCartByUserId(user.Id);
-                if (cart != null)
-                {
-                    var cartItem = cart.CartItems.FirstOrDefault(ci => ci.ProductId == id);
-                    if (cartItem != null)
-                    {
-                        // Ürünü sepetten tamamen kaldır
-                        _cartItemDal.Delete(cartItem);
-
-                        // Sepet eleman sayısını güncelle
-                        var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                        SessionHelper.Count = cartItems.Count;
-                    }
-                }
-
-                return RedirectToAction("Index");
-            }
+            return RedirectToAction("Login", "Account");
         }
 
-        // Kullanıcı giriş yapmamışsa session'dan sil (eski davranış)
-        var card = SessionHelper.GetObjectFromJson<List<CardItem>>(HttpContext.Session, "Card");
-        if (card != null)
+        var user = await _userManager.GetUserAsync(User);
+        if (user != null)
         {
-            int index = IsExist(card, id);
-            if (index >= 0)
+            var cart = _cartDal.GetCartByUserId(user.Id);
+            if (cart != null)
             {
-                card.RemoveAt(index);
-                SessionHelper.SetObjectAsJson(HttpContext.Session, "Card", card);
+                // Direkt veritabanından sepet öğesini bul
+                var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+                var cartItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
+                
+                if (cartItem != null)
+                {
+                    // EntityFramework ile hard delete yap
+                    using (var context = new Data.Context.ETicaretContext())
+                    {
+                        var itemToDelete = context.CartItems.Find(cartItem.Id);
+                        if (itemToDelete != null)
+                        {
+                            context.CartItems.Remove(itemToDelete);
+                            context.SaveChanges();
+                        }
+                    }
+
+                    // Sepet eleman sayısını güncelle
+                    cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
+                    SessionHelper.Count = cartItems.Count;
+                }
             }
         }
 

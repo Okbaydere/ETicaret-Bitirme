@@ -16,4 +16,10 @@ public class OrderLine
     
     public virtual Product Product { get; set; }
     
+    // Ürün silindikten sonra bile sipariş geçmişinde görüntülenebilmesi için
+    public string? ProductName { get; set; }
+    
+    public string? ProductImage { get; set; }
+    
+    public bool IsActive { get; set; } = true;
 }   

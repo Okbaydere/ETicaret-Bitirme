@@ -1,32 +1,64 @@
 @model List<Data.ViewModels.RoleAssignModel>
 @{
+    ViewData["Title"] = $"{ViewBag.Username} - Rol Atama";
     Layout = "_Layout";
 }
-<h1>@ViewBag.Username</h1>
-<h2>RoleAssign</h2>
-<hr />
-@using (Html.BeginForm())
-{
-    <table class="table table-bordered table-striped w-25">
-        <thead>
-        <tr>
-            <th>Role Adı</th>
-        </tr>
-        </thead>
-        <tbody>
-        @for (int i = 0; i < Model.Count; i++)
-        {
-            <tr>
-                <td>
-                    <input type="checkbox" asp-for="@Model[i].HasAssigned" />
-                    @Model[i].Name
-                    <input type="hidden" asp-for="@Model[i].Id" />
-                    <input type="hidden" asp-for="@Model[i].Name" />
-                </td>
 
-            </tr>
-        }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" type="submit">Role Ata</button>
-}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-user-shield me-2"></i> Kullanıcı Rollerini Yönet</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h5 class="text-primary"><i class="fas fa-user me-2"></i> Kullanıcı: <span class="fw-bold">@ViewBag.Username</span></h5>
+                        <p class="text-muted small">Bu kullanıcıya atanacak rolleri işaretleyin.</p>
+                    </div>
+                    
+                    <form method="post">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Rol Adı</th>
+                                        <th width="100" class="text-center">Atanmış</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.Count; i++)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <label for="roleCheck_@i" class="d-block mb-0 form-check-label">
+                                                    <i class="fas fa-tag me-2 text-secondary"></i>@Model[i].Name
+                                                </label>
+                                                <input type="hidden" asp-for="@Model[i].Id" />
+                                                <input type="hidden" asp-for="@Model[i].Name" />
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input type="checkbox" asp-for="@Model[i].HasAssigned" id="roleCheck_@i" class="form-check-input" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Kullanıcılara Dön
+                            </a>
+                            <button class="btn btn-primary px-4" type="submit">
+                                <i class="fas fa-save me-1"></i> Rolleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

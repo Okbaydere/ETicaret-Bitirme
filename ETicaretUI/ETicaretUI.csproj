@@ -7,7 +7,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1"/>
+      <Compile Remove="Models\**" />
+      <Compile Remove="Pages\**" />
+      <Content Remove="Models\**" />
+      <Content Remove="Pages\**" />
+      <EmbeddedResource Remove="Models\**" />
+      <EmbeddedResource Remove="Pages\**" />
+      <None Remove="Models\**" />
+      <None Remove="Pages\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
       <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.36" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.36" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.36">
@@ -30,8 +41,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Models\"/>
-        <Folder Include="Pages\"/>
       <Folder Include="wwwroot\Image\" />
     </ItemGroup>
 

@@ -17,6 +17,8 @@ public class CartItem
     public virtual Product Product { get; set; }
 
     public DateTime DateAdded { get; set; }
+    
+    public bool IsActive { get; set; } = true;
 
     public CartItem()
     {

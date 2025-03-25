@@ -1,61 +1,100 @@
 @model Data.Entities.Product
 
 @{
-    Layout = null;
+    ViewData["Title"] = "Ürünü Pasife Al | ETicaret";
 }
-<h1>Delete</h1>
 
-<h3>Silmek istediğinize eminmisiniz ?</h3>
-<div>
-    <h4>Product</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-       
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Image)
-        </dt>
-        <dd class="col-sm-10">
-            <img src="@Model.Image" class="w-25" />
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Stock)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Stock)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IsHome)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IsHome)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.IsApproved)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.IsApproved)
-        </dd>
-    </dl>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Ürünü Pasife Al</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i> Dikkat!</h5>
+                        <p>Bu ürünü pasife almak istediğinizden emin misiniz? Pasife alınan ürünler müşteriler tarafından görüntülenemez ve satın alınamaz.</p>
+                    </div>
 
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="ProductId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+                    <div class="row mt-4">
+                        <div class="col-md-5 mb-4 mb-md-0">
+                            <div class="text-center">
+                                @if (!string.IsNullOrEmpty(Model.Image))
+                                {
+                                    <img src="@Model.Image" alt="@Model.Name" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: contain;">
+                                }
+                                else
+                                {
+                                    <img src="~/images/no-image.png" alt="Ürün Görseli Yok" class="img-fluid rounded shadow-sm" style="max-height: 300px; object-fit: contain;">
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <h4 class="mb-3">Ürün Bilgileri</h4>
+                            <dl class="row">
+                                <dt class="col-sm-4">Ürün Adı:</dt>
+                                <dd class="col-sm-8 mb-3">@Model.Name</dd>
+                                
+                                <dt class="col-sm-4">Kategori:</dt>
+                                <dd class="col-sm-8 mb-3">@(Model.Category?.CategoryName ?? "Kategori Yok")</dd>
+                                
+                                <dt class="col-sm-4">Fiyat:</dt>
+                                <dd class="col-sm-8 mb-3">@Model.Price.ToString("C2")</dd>
+                                
+                                <dt class="col-sm-4">Stok:</dt>
+                                <dd class="col-sm-8 mb-3">
+                                    @if (Model.Stock <= 0)
+                                    {
+                                        <span class="badge bg-danger">Stok Yok</span>
+                                    }
+                                    else
+                                    {
+                                        @Model.Stock
+                                    }
+                                </dd>
+                                
+                                <dt class="col-sm-4">Ana Sayfada:</dt>
+                                <dd class="col-sm-8 mb-3">
+                                    @if (Model.IsHome)
+                                    {
+                                        <span class="badge bg-success">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Hayır</span>
+                                    }
+                                </dd>
+                                
+                                <dt class="col-sm-4">Onaylı:</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.IsApproved)
+                                    {
+                                        <span class="badge bg-success">Evet</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Hayır</span>
+                                    }
+                                </dd>
+                            </dl>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Listeye Dön
+                                </a>
+                                <form asp-action="Delete" method="post">
+                                    <input type="hidden" asp-for="ProductId" />
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-toggle-off me-1"></i> Ürünü Pasife Al
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
