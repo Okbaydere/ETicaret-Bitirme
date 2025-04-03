@@ -7,11 +7,21 @@ namespace Data.Context;
 
 public class ETicaretContext : IdentityDbContext<AppUser, AppRole, int>
 {
+    // DbContextOptions parametresi alan constructor
+    public ETicaretContext(DbContextOptions<ETicaretContext> options) : base(options)
+    {
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer(
-               //"Server=tcp:10.20.103.33,1433;Database=ETicaret;User ID=SA;Password=Softito1882;Trusted_Connection=False;Encrypt=False;");
-               "Server=DESKTOP-TUBBJ3B;Database=ETicaret;Trusted_Connection=True;");
+        // Eğer DI (Dependency Injection) ile options gelmediyse, varsayılan bağlantıyı kullan
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(
+                   //"Server=tcp:10.20.103.33,1433;Database=ETicaret;User ID=SA;Password=Softito1882;Trusted_Connection=False;Encrypt=False;");
+                   "Server=DESKTOP-TUBBJ3B;Database=ETicaret;Trusted_Connection=True;");
+        }
+        base.OnConfiguring(optionsBuilder);
     }
 
     public DbSet<Category> Categories { get; set; }

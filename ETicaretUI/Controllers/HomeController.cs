@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Dal.Abstract;
-using Data.Context;
 using Data.ViewModels;
 using ETicaretUI.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -13,17 +12,15 @@ public class HomeController : Controller
     private readonly ILogger<HomeController> _logger;
     private readonly ICategoryDal _categoryDal;
     private readonly IProductDal _productDal;
-    private readonly ETicaretContext _context;
 
     // Sayfa başına gösterilecek ürün sayısı
     private const int PageSize = 6;
 
-    public HomeController(ILogger<HomeController> logger, ICategoryDal categoryDal, IProductDal productDal, ETicaretContext context)
+    public HomeController(ILogger<HomeController> logger, ICategoryDal categoryDal, IProductDal productDal)
     {
         _logger = logger;
         _categoryDal = categoryDal;
         _productDal = productDal;
-        _context = context;
     }
 
 
@@ -116,11 +113,8 @@ public class HomeController : Controller
             .Take(PageSize)
             .ToList();
 
-        // Kategorileri ilişkili ürünlerle birlikte yükle
-        var categories = _context.Categories
-            .Include(c => c.Products.Where(p => p.IsActive && p.IsApproved))
-            .Where(c => c.IsActive)
-            .ToList();
+        // Aktif kategorileri aktif/onaylı ürünlerle birlikte yükle
+        var categories = _categoryDal.GetActiveCategoriesWithActiveApprovedProducts();
 
         // Fiyat aralığı için min ve max değerleri bul
         var allProducts = _productDal.GetAll(x => x.IsApproved);

@@ -5,19 +5,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class ProductController : Controller
 {
-    private readonly ETicaretContext _context;
     private readonly IProductDal _productDal;
     private readonly ICategoryDal _categoryDal;
 
-    public ProductController(ETicaretContext context, IProductDal productDal, ICategoryDal categoryDal)
+    public ProductController(IProductDal productDal, ICategoryDal categoryDal)
     {
-        _context = context;
         _productDal = productDal;
         _categoryDal = categoryDal;
     }
@@ -25,19 +24,17 @@ public class ProductController : Controller
 
     public IActionResult Index()
     {
-        // IsActive=false (silinmiş) ürünleri de dahil etmek için doğrudan context üzerinden sorgu yapıyoruz
-        var products = _context.Products
-            .Include(p => p.Category)
-            .OrderByDescending(p => p.IsActive) // Aktif ürünler üstte, silinmiş ürünler altta
-            .ThenBy(p => p.Name)
-            .ToList();
+        var products = _productDal.GetAll()
+                                 .OrderByDescending(p => p.IsActive)
+                                 .ThenBy(p => p.Name)
+                                 .ToList();
             
         return View(products);
     }
 
     public IActionResult Create()
     {
-        ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "CategoryName");
+        ViewData["CategoryId"] = new SelectList(_categoryDal.GetAll(), "Id", "CategoryName");
         return View();
     }
 
@@ -52,25 +49,24 @@ public class ProductController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "CategoryName", product.CategoryId);
+        ViewData["CategoryId"] = new SelectList(_categoryDal.GetAll(), "Id", "CategoryName", product.CategoryId);
 
         return View(product);
     }
 
-    //GET
-    public async Task<IActionResult> Edit(int? id)
+    public IActionResult Edit(int? id)
     {
         if (id == null)
         {
             return RedirectToAction("Error", "Home");
         }
 
-        var product = await _context.Products.FindAsync(id);
+        var product = _productDal.Get(id.Value);
 
         if (product != null)
         {
             ViewData["CategoryId"] = new SelectList(
-                _context.Categories,
+                _categoryDal.GetAll(),
                 "Id",
                 "CategoryName",
                 product.CategoryId);
@@ -82,7 +78,7 @@ public class ProductController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int id,
+    public IActionResult Edit(int id,
         [Bind("ProductId,Name,CategoryId,Stock,Price,Image,IsHome,IsApproved,IsActive")]
         Product product)
     {
@@ -93,13 +89,12 @@ public class ProductController : Controller
 
         if (ModelState.IsValid)
         {
-            _context.Update(product);
-            await _context.SaveChangesAsync();
+            _productDal.Update(product);
             return RedirectToAction(nameof(Index));
         }
 
         ViewData["CategoryId"] = new SelectList(
-            _context.Categories,
+            _categoryDal.GetAll(),
             "Id",
             "CategoryName",
             product.CategoryId);
@@ -113,26 +108,27 @@ public class ProductController : Controller
             return NotFound();
         }
 
-        var product = _productDal.Get(Convert.ToInt32(id));
+        var product = _productDal.Get(id.Value);
+        if (product == null)
+        {
+             return NotFound();
+        }
 
         return View(product);
     }
 
-// GET: Product/Delete/5
-    public async Task<IActionResult> Delete(int? id)
+    public IActionResult Delete(int? id)
     {
         if (id == null)
         {
             return NotFound();
         }
 
-        var product = await _context.Products
-            .Include(p => p.Category)
-            .FirstOrDefaultAsync(m => m.ProductId == id);
+        var product = _productDal.Get(id.Value);
 
         if (product == null)
         {
-            return RedirectToAction("Error", "Home");
+            return NotFound();
         }
 
         return View(product);
@@ -141,7 +137,7 @@ public class ProductController : Controller
     [HttpPost, ActionName("Delete")]
     public IActionResult DeleteConfirmed(int id)
     {
-        var product = _context.Products.Find(id);
+        var product = _productDal.Get(id);
         if (product != null)
         {
             _productDal.Delete(product);
@@ -151,23 +147,21 @@ public class ProductController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Activate(int? id)
+    public IActionResult Activate(int? id)
     {
         if (id == null)
         {
             return NotFound();
         }
 
-        var product = await _context.Products.FindAsync(id);
+        var product = _productDal.Get(id.Value);
         if (product == null)
         {
             return NotFound();
         }
 
-        // Ürünü aktifleştir
         product.IsActive = true;
-        _context.Update(product);
-        await _context.SaveChangesAsync();
+        _productDal.Update(product);
 
         return RedirectToAction(nameof(Index));
     }

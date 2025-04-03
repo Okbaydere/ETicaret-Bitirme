@@ -6,153 +6,151 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Business.Concrete;
 
-public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity> where Tentity : class, new()
-    where Tcontext : IdentityDbContext<AppUser, AppRole, int>, new()
+// new() kısıtlaması kaldırıldı
+public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity> 
+    where Tentity : class, new()
+    where Tcontext : IdentityDbContext<AppUser, AppRole, int> 
 {
+    // Context field'ı eklendi
+    protected readonly Tcontext _context;
+
+    // Constructor ile context enjeksiyonu
+    public GenericRepository(Tcontext context)
+    {
+        _context = context;
+    }
+
+    // CreateContext metodu kaldırıldı
+
     public List<Tentity> GetAll(Expression<Func<Tentity, bool>> filter = null)
     {
-        using (var db = new Tcontext())
-        {
-            // Default olarak IsActive=true olan kayıtları getir
-            var query = db.Set<Tentity>().AsQueryable();
+        // using bloğu kaldırıldı, _context kullanılıyor
+        // Default olarak IsActive=true olan kayıtları getir
+        var query = _context.Set<Tentity>().AsQueryable();
 
-            // Eğer Tentity sınıfında IsActive property'si varsa, filtreleme yap
-            // Dinamik sorgu yapılabilmesi için Expression kullanıldı
-            var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
-            if (isActiveProperty != null)
-            {
-                var parameter = Expression.Parameter(typeof(Tentity), "x"); // x => x.IsActive == true
-                var property = Expression.Property(parameter, isActiveProperty); // x.IsActive
-                var trueValue = Expression.Constant(true);
-                var condition = Expression.Equal(property, trueValue);
-                var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
-                
-                query = query.Where(lambda);
-            }
+        // Eğer Tentity sınıfında IsActive property'si varsa, filtreleme yap
+        // Dinamik sorgu yapılabilmesi için Expression kullanıldı
+        var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
+        if (isActiveProperty != null)
+        {
+            var parameter = Expression.Parameter(typeof(Tentity), "x"); // x => x.IsActive == true
+            var property = Expression.Property(parameter, isActiveProperty); // x.IsActive
+            var trueValue = Expression.Constant(true);
+            var condition = Expression.Equal(property, trueValue);
+            var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
             
-            // diğer filtreler için 
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
-            
-            return query.ToList();
+            query = query.Where(lambda);
         }
+        
+        // diğer filtreler için 
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+        
+        return query.ToList();
     }
 
     public Tentity Get(int id)
     {
-        using (var db = new Tcontext())
+        // using bloğu kaldırıldı, _context kullanılıyor
+        var nesne = _context.Set<Tentity>().Find(id);
+        
+        // Eğer Tentity sınıfında IsActive property'si varsa ve false ise null dön
+        if (nesne != null)
         {
-            var nesne = db.Set<Tentity>().Find(id);
-            
-            // Eğer Tentity sınıfında IsActive property'si varsa ve false ise null dön
-            if (nesne != null)
+            var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
+            if (isActiveProperty != null)
             {
-                var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
-                if (isActiveProperty != null)
+                // GetValue null dönebilir, cast etmeden önce kontrol et
+                var isActiveValue = isActiveProperty.GetValue(nesne);
+                if (isActiveValue is bool isActive && !isActive)
                 {
-                    bool isActive = (bool)isActiveProperty.GetValue(nesne);
-                    if (!isActive)
-                    {
-                        return null;
-                    }
+                    return null;
                 }
             }
-            
-            return nesne;
         }
+        
+        return nesne;
     }
 
     public Tentity Get(Expression<Func<Tentity, bool>> filter)
     {
-        using (var db = new Tcontext())
+        // using bloğu kaldırıldı, _context kullanılıyor
+        // Default olarak IsActive=true olan kayıtları getir
+        var query = _context.Set<Tentity>().AsQueryable();
+        
+        // Eğer Tentity sınıfında IsActive property'si varsa, filtreleme yap
+        var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
+        if (isActiveProperty != null)
         {
-            // Default olarak IsActive=true olan kayıtları getir
-            var query = db.Set<Tentity>().AsQueryable();
+            var parameter = Expression.Parameter(typeof(Tentity), "x");
+            var property = Expression.Property(parameter, isActiveProperty);
+            var trueValue = Expression.Constant(true);
+            var condition = Expression.Equal(property, trueValue);
+            var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
             
-            // Eğer Tentity sınıfında IsActive property'si varsa, filtreleme yap
-            var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
-            if (isActiveProperty != null)
-            {
-                var parameter = Expression.Parameter(typeof(Tentity), "x");
-                var property = Expression.Property(parameter, isActiveProperty);
-                var trueValue = Expression.Constant(true);
-                var condition = Expression.Equal(property, trueValue);
-                var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
-                
-                query = query.Where(lambda);
-            }
-            
-            // Belirtilen filtreyi de uygula
-            var nesne = query.FirstOrDefault(filter);
-            return nesne;
+            query = query.Where(lambda);
         }
+        
+        // Belirtilen filtreyi de uygula
+        var nesne = query.FirstOrDefault(filter);
+        return nesne;
     }
 
     public void Add(Tentity tentity)
     {
-        using (var db = new Tcontext())
-        {
-            db.Set<Tentity>().Add(tentity);
-            db.SaveChanges();
-        }
+        // using bloğu kaldırıldı, _context kullanılıyor
+        _context.Set<Tentity>().Add(tentity);
+        _context.SaveChanges();
     }
 
     public void Update(Tentity tentity)
     {
-        using (var db = new Tcontext())
-        {
-            db.Set<Tentity>().Update(tentity);
-            db.SaveChanges();
-        }
+        // using bloğu kaldırıldı, _context kullanılıyor
+        _context.Set<Tentity>().Update(tentity);
+        _context.SaveChanges();
     }
 
     public void Delete(Tentity tentity)
     {
-    
+        // using bloğu kaldırıldı, _context kullanılıyor
         var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
         if (isActiveProperty != null)
         {
-            using (var db = new Tcontext())
+             // Entity'nin state'ini değiştirmeden önce context'e attach etmek gerekebilir
+            var entry = _context.Entry(tentity);
+            if (entry.State == EntityState.Detached)
             {
-                isActiveProperty.SetValue(tentity, false);
-                db.Set<Tentity>().Update(tentity);
-                db.SaveChanges();
+                _context.Set<Tentity>().Attach(tentity);
             }
+            isActiveProperty.SetValue(tentity, false);
+            _context.Set<Tentity>().Update(tentity);
         }
         else
         {
-       
-            using (var db = new Tcontext())
-            {
-                db.Entry(tentity).State = EntityState.Deleted;
-                db.SaveChanges();
-            }
+            _context.Set<Tentity>().Remove(tentity);
         }
+        _context.SaveChanges();
     }
 
     public void Delete(int id)
     {
-        using (var db = new Tcontext())
+        // using bloğu kaldırıldı, _context kullanılıyor
+        var nesne = _context.Set<Tentity>().Find(id);
+        if (nesne != null)
         {
-            var nesne = db.Set<Tentity>().Find(id);
-            if (nesne != null)
+            var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
+            if (isActiveProperty != null)
             {
-             
-                var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
-                if (isActiveProperty != null)
-                {
-                    isActiveProperty.SetValue(nesne, false);
-                    db.Set<Tentity>().Update(nesne);
-                }
-                else
-                {
-                  
-                    db.Set<Tentity>().Remove(nesne);
-                }
-                db.SaveChanges();
+                isActiveProperty.SetValue(nesne, false);
+                _context.Set<Tentity>().Update(nesne);
             }
+            else
+            {
+                _context.Set<Tentity>().Remove(nesne);
+            }
+            _context.SaveChanges();
         }
     }
 }

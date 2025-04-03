@@ -8,10 +8,13 @@ namespace Dal.Concrete;
 
 public class CartDal : GenericRepository<Cart, ETicaretContext>, ICartDal
 {
+    public CartDal(ETicaretContext context) : base(context)
+    {
+    }
+
     public Cart GetCartByUserId(int userId)
     {
-        using var context = new ETicaretContext();
-        return context.Carts
+        return _context.Carts
             .Include(c => c.CartItems)
             .ThenInclude(ci => ci.Product)
             .FirstOrDefault(c => c.UserId == userId);
@@ -19,9 +22,8 @@ public class CartDal : GenericRepository<Cart, ETicaretContext>, ICartDal
 
     public void ClearCart(int cartId)
     {
-        using var context = new ETicaretContext();
-        var cartItems = context.CartItems.Where(ci => ci.CartId == cartId);
-        context.CartItems.RemoveRange(cartItems);
-        context.SaveChanges();
+        var cartItems = _context.CartItems.Where(ci => ci.CartId == cartId);
+        _context.CartItems.RemoveRange(cartItems);
+        _context.SaveChanges();
     }
 }

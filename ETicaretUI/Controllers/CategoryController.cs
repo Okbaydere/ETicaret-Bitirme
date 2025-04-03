@@ -1,23 +1,20 @@
 using Dal.Abstract;
-using Data.Context;
 using Data.Entities;
 using ETicaretUI.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class CategoryController : Controller
 {
-    private readonly ETicaretContext _context;
     private readonly ICategoryDal _categoryDal;
     private readonly IProductDal _productDal;
 
-    public CategoryController(ETicaretContext context, ICategoryDal categoryDal, IProductDal productDal)
+    public CategoryController(ICategoryDal categoryDal, IProductDal productDal)
     {
-        _context = context;
         _categoryDal = categoryDal;
         _productDal = productDal;
     }
@@ -29,16 +26,19 @@ public class CategoryController : Controller
 
         foreach (var category in categories)
         {
-            int productCount = _productDal.GetAll().Count(p => p.CategoryId == category.Id);
+            int productCount = _productDal.GetAll(p => p.CategoryId == category.Id).Count();
 
             result.Add(new CategoryViewModel
             {
                 Id = category.Id,
                 CategoryName = category.CategoryName,
                 Description = category.Description,
-                ProductCount = productCount
+                ProductCount = productCount,
+                IsActive = category.IsActive
             });
         }
+
+        result = result.OrderByDescending(c => c.IsActive).ThenBy(c => c.CategoryName).ToList();
 
         return View(result);
     }
@@ -54,6 +54,7 @@ public class CategoryController : Controller
     {
         if (ModelState.IsValid)
         {
+            category.IsActive = true;
             _categoryDal.Add(category);
             return RedirectToAction(nameof(Index));
         }
@@ -61,16 +62,14 @@ public class CategoryController : Controller
         return View(category);
     }
 
-    public async Task<IActionResult> Edit(int? id)
+    public IActionResult Edit(int? id)
     {
         if (id == null)
         {
-            return RedirectToAction("Error", "Home");
+            return NotFound();
         }
 
-        var category = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var category = _categoryDal.GetByIdWithProducts(id.Value);
 
         if (category == null)
         {
@@ -81,26 +80,21 @@ public class CategoryController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,CategoryName,Description,IsActive")] Category category)
+    public IActionResult Edit(int id, [Bind("Id,CategoryName,Description,IsActive")] Category category)
     {
         if (id != category.Id)
         {
-            return RedirectToAction("Error", "Home");
+            return NotFound();
         }
 
-        // Kategorideki ürünleri kontrol et
-        var existingCategory = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var existingCategory = _categoryDal.GetByIdWithProducts(id);
 
         if (existingCategory == null)
         {
             return NotFound();
         }
 
-        // Eğer kategoride ürün varsa ve aktiflik durumu false olarak değiştirilmek isteniyorsa
-        if (existingCategory.Products != null && existingCategory.Products.Any() && 
-            existingCategory.IsActive && !category.IsActive)
+        if (existingCategory.Products.Any() && existingCategory.IsActive && !category.IsActive)
         {
             ModelState.AddModelError("IsActive", "Bu kategoride ürün bulunduğu için aktiflik durumunu kapatılamazsınız. Önce kategorideki ürünleri başka bir kategoriye taşıyın veya silin.");
             return View(category);
@@ -108,66 +102,46 @@ public class CategoryController : Controller
 
         if (ModelState.IsValid)
         {
-            try
-            {
-                // Sadece güncellenen alanları mevcut kategoriye uygula
-                existingCategory.CategoryName = category.CategoryName;
-                existingCategory.Description = category.Description;
-                existingCategory.IsActive = category.IsActive;
-                
-                _context.Update(existingCategory);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla güncellendi.";
-                return RedirectToAction(nameof(Index));
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoryExists(category.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            existingCategory.CategoryName = category.CategoryName;
+            existingCategory.Description = category.Description;
+            existingCategory.IsActive = category.IsActive;
+            
+            _categoryDal.Update(existingCategory);
+            TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla güncellendi.";
+            return RedirectToAction(nameof(Index));
         }
 
         return View(category);
     }
 
-    public async Task<IActionResult> Delete(int? id)
+    public IActionResult Delete(int? id)
     {
         if (id == null)
         {
             return NotFound();
         }
 
-        var category = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (category == null)
-        {
-            return RedirectToAction("Error", "Home");
-        }
-
-        return View(category);
-    }
-
-    [HttpPost, ActionName("Delete")]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        var category = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(m => m.Id == id);
+        var category = _categoryDal.GetByIdWithProducts(id.Value);
 
         if (category == null)
         {
             return NotFound();
         }
 
-        if (category.Products != null && category.Products.Any())
+        return View(category);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        var category = _categoryDal.GetByIdWithProducts(id);
+
+        if (category == null)
+        {
+            return NotFound();
+        }
+
+        if (category.Products.Any())
         {
             TempData["ErrorMessage"] =
                 $"{category.CategoryName} kategorisinde {category.Products.Count} adet ürün bulunduğu için silinemez. Önce ürünleri başka kategorilere taşıyın veya silin.";
@@ -178,18 +152,11 @@ public class CategoryController : Controller
         {
             _categoryDal.Delete(category);
             TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla silindi.";
-            return RedirectToAction(nameof(Index));
         }
         catch (Exception ex)
         {
             TempData["ErrorMessage"] = $"Kategori silinirken bir hata oluştu: {ex.Message}";
-            return RedirectToAction(nameof(Index));
         }
-    }
-
-
-    private bool CategoryExists(int id)
-    {
-        return _context.Categories.Any(e => e.Id == id);
+        return RedirectToAction(nameof(Index));
     }
 }

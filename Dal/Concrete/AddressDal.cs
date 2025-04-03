@@ -8,10 +8,13 @@ namespace Dal.Concrete;
 
 public class AddressDal : GenericRepository<Address, ETicaretContext>, IAddressDal
 {
+    public AddressDal(ETicaretContext context) : base(context)
+    {
+    }
+
     public List<Address> GetAddressesByUserId(int userId)
     {
-        using var context = new ETicaretContext();
-        return context.Addresses
+        return _context.Addresses
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.IsDefault)
             .ThenBy(a => a.Title)
@@ -20,26 +23,20 @@ public class AddressDal : GenericRepository<Address, ETicaretContext>, IAddressD
 
     public Address GetDefaultAddress(int userId)
     {
-        using var context = new ETicaretContext();
-        return context.Addresses
+        return _context.Addresses
             .FirstOrDefault(a => a.UserId == userId && a.IsDefault);
     }
 
     public void SetDefaultAddress(int addressId, int userId)
     {
-        using var context = new ETicaretContext();
-        
-
-        using var transaction = context.Database.BeginTransaction();
+        using var transaction = _context.Database.BeginTransaction();
         
         try
         {
-
-            context.Database.ExecuteSqlRaw(
+            _context.Database.ExecuteSqlRaw(
                 "UPDATE Addresses SET IsDefault = 0 WHERE UserId = {0}", userId);
             
-
-            context.Database.ExecuteSqlRaw(
+            _context.Database.ExecuteSqlRaw(
                 "UPDATE Addresses SET IsDefault = 1 WHERE Id = {0} AND UserId = {1}", 
                 addressId, userId);
             

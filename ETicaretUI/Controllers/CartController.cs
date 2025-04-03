@@ -157,16 +157,8 @@ public class CartController : Controller
                     }
                     else
                     {
-                        // Tek adet kaldıysa tamamen sil (hard-delete)
-                        using (var context = new Data.Context.ETicaretContext())
-                        {
-                            var itemToDelete = context.CartItems.Find(cartItem.Id);
-                            if (itemToDelete != null)
-                            {
-                                context.CartItems.Remove(itemToDelete);
-                                context.SaveChanges();
-                            }
-                        }
+                        // Tek adet kaldıysa tamamen sil (DAL üzerinden)
+                        _cartItemDal.Delete(cartItem); // Direkt new context yerine DAL kullan
                     }
 
                     // Sepet eleman sayısını güncelle
@@ -382,7 +374,7 @@ public class CartController : Controller
         _orderDal.Add(order);
     }
 
-    public async Task<IActionResult> RemoveAll(int id)
+    public async Task<IActionResult> RemoveAll(int id) // Parametre adı 'id' ama aslında ProductId
     {
         if (!User.Identity.IsAuthenticated)
         {
@@ -395,26 +387,10 @@ public class CartController : Controller
             var cart = _cartDal.GetCartByUserId(user.Id);
             if (cart != null)
             {
-                // Direkt veritabanından sepet öğesini bul
-                var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                var cartItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
-                
+                var cartItem = _cartItemDal.GetCartItem(cart.Id, id); // GetCartItem metodu kullanılacak
                 if (cartItem != null)
                 {
-                    // EntityFramework ile hard delete yap
-                    using (var context = new Data.Context.ETicaretContext())
-                    {
-                        var itemToDelete = context.CartItems.Find(cartItem.Id);
-                        if (itemToDelete != null)
-                        {
-                            context.CartItems.Remove(itemToDelete);
-                            context.SaveChanges();
-                        }
-                    }
-
-                    // Sepet eleman sayısını güncelle
-                    cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-                    SessionHelper.Count = cartItems.Count;
+                    _cartItemDal.Delete(cartItem); // Direkt new context yerine DAL kullan
                 }
             }
         }

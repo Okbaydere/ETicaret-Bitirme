@@ -5,6 +5,9 @@ using Data.Entities;
 
 namespace Dal.Concrete;
 
-public class OrderDal:GenericRepository<Order,ETicaretContext>,IOrderDal
+public class OrderDal : GenericRepository<Order, ETicaretContext>, IOrderDal
 {
+    public OrderDal(ETicaretContext context) : base(context)
+    {
+    }
 }

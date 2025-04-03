@@ -1,10 +1,10 @@
-using Data.Context;
 using Data.Identity;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Dal.Abstract;
+using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
@@ -13,13 +13,13 @@ public class UserController : Controller
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly RoleManager<AppRole> _roleManager;
-    private readonly ETicaretContext _context;
+    private readonly IOrderDal _orderDal;
 
-    public UserController(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, ETicaretContext context)
+    public UserController(UserManager<AppUser> userManager, RoleManager<AppRole> roleManager, IOrderDal orderDal)
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _context = context;
+        _orderDal = orderDal;
     }
 
     public async Task<IActionResult> Index()
@@ -171,8 +171,8 @@ public class UserController : Controller
             return RedirectToAction("Index");
         }
         
-        // Kullanıcının siparişleri var mı kontrol et
-        var hasOrders = _context.Orders.Any(o => o.UserName == user.UserName);
+        // Kullanıcının siparişleri var mı kontrol et (DAL üzerinden)
+        var hasOrders = _orderDal.GetAll(o => o.UserName == user.UserName).Any();
         
         try
         {

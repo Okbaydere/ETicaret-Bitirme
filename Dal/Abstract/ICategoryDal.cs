@@ -5,5 +5,6 @@ namespace Dal.Abstract;
 
 public interface ICategoryDal:IGenericRepository<Category>
 {
-    
+    Category? GetByIdWithProducts(int id);
+    List<Category> GetActiveCategoriesWithActiveApprovedProducts();
 }

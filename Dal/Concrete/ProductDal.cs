@@ -7,39 +7,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dal.Concrete;
 
-public class ProductDal : GenericRepository<Product,ETicaretContext>,IProductDal
+public class ProductDal : GenericRepository<Product, ETicaretContext>, IProductDal
 {
+    // Constructor eklendi
+    public ProductDal(ETicaretContext context) : base(context)
+    {
+    }
+
     // Stok sıfır olan ürünleri deaktif et (soft delete)
     public void DeactivateOutOfStockProducts()
     {
-        using (var context = new ETicaretContext())
+        // CreateContext() yerine _context kullanılıyor
+        var outOfStockProducts = _context.Products
+            .Where(p => p.Stock <= 0 && p.IsActive)
+            .ToList();
+
+        foreach (var product in outOfStockProducts)
         {
-            var outOfStockProducts = context.Products
-                .Where(p => p.Stock <= 0 && p.IsActive)
-                .ToList();
-
-            foreach (var product in outOfStockProducts)
-            {
-                product.IsActive = false;
-                context.Update(product);
-            }
-
-            context.SaveChanges();
+            product.IsActive = false;
+            _context.Update(product);
         }
+
+        _context.SaveChanges(); // SaveChanges buraya taşındı
     }
 
     // Belirli bir ürünün stok durumunu kontrol et ve gerekirse deaktif et
     public void CheckAndDeactivateProduct(int productId)
     {
-        using (var context = new ETicaretContext())
+        // CreateContext() yerine _context kullanılıyor
+        var product = _context.Products.Find(productId);
+        if (product != null && product.Stock <= 0 && product.IsActive)
         {
-            var product = context.Products.Find(productId);
-            if (product != null && product.Stock <= 0 && product.IsActive)
-            {
-                product.IsActive = false;
-                context.Update(product);
-                context.SaveChanges();
-            }
+            product.IsActive = false;
+            _context.Update(product);
+            _context.SaveChanges();
         }
     }
 }

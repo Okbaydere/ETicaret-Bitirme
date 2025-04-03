@@ -6,4 +6,5 @@ namespace Dal.Abstract;
 public interface ICartItemDal : IGenericRepository<CartItem>
 {
     List<CartItem> GetCartItemsByCartId(int cartId);
+    CartItem? GetCartItem(int cartId, int productId);
 }
