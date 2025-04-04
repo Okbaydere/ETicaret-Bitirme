@@ -75,12 +75,12 @@ public class OrderController : Controller
             {
                 OrderLineId = orderLine.Id,
                 ProductId = orderLine.ProductId,
-                Name = !string.IsNullOrEmpty(orderLine.ProductName) 
-                    ? orderLine.ProductName 
+                Name = !string.IsNullOrEmpty(orderLine.ProductName)
+                    ? orderLine.ProductName
                     : (product?.Name ?? "Ürün bulunamadı"),
                 Image = !string.IsNullOrEmpty(orderLine.ProductImage)
                     ? orderLine.ProductImage
-                    : product?.Image,
+                    : (product?.Image ?? string.Empty),
                 Price = orderLine.Price,
                 Quantity = orderLine.Quantity
             });

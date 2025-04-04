@@ -5,6 +5,6 @@ namespace Dal.Abstract;
 
 public interface ICartDal : IGenericRepository<Cart>
 {
-    Cart GetCartByUserId(int userId);
+    Cart? GetCartByUserId(int userId);
     void ClearCart(int cartId);
 }

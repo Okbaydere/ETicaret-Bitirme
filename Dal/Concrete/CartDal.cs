@@ -12,7 +12,7 @@ public class CartDal : GenericRepository<Cart, ETicaretContext>, ICartDal
     {
     }
 
-    public Cart GetCartByUserId(int userId)
+    public Cart? GetCartByUserId(int userId)
     {
         return _context.Carts
             .Include(c => c.CartItems)

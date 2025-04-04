@@ -36,7 +36,7 @@ public class CartController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated == true)
         {
             // Kullanıcı giriş yapmışsa veritabanındaki sepeti göster
             var user = await _userManager.GetUserAsync(User);
@@ -64,7 +64,7 @@ public class CartController : Controller
 
     public async Task<IActionResult> Buy(int id)
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true)
         {
             // Kullanıcı giriş yapmamışsa giriş sayfasına yönlendir
             return RedirectToAction("Login", "Account");
@@ -96,16 +96,16 @@ public class CartController : Controller
             // Ürün sepette var mı kontrol et
             var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
             var existingItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
-            
+
             // Mevcut sepetteki adet + eklenecek yeni adet için stok kontrolü
             int currentQuantity = existingItem?.Quantity ?? 0;
-            
+
             if (currentQuantity + 1 > product.Stock)
             {
                 TempData["Error"] = $"Üzgünüz, '{product.Name}' ürününden yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}";
                 return RedirectToAction("Index");
             }
-            
+
             if (existingItem != null)
             {
                 existingItem.Quantity++;
@@ -133,7 +133,7 @@ public class CartController : Controller
 
     public async Task<IActionResult> Delete(int id)
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true)
         {
             return RedirectToAction("Login", "Account");
         }
@@ -146,7 +146,7 @@ public class CartController : Controller
             {
                 var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
                 var cartItem = cartItems.FirstOrDefault(ci => ci.ProductId == id);
-                
+
                 if (cartItem != null)
                 {
                     if (cartItem.Quantity > 1)
@@ -173,7 +173,7 @@ public class CartController : Controller
 
     public async Task<IActionResult> Checkout()
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true)
         {
             return RedirectToAction("Login", "Account");
         }
@@ -192,7 +192,7 @@ public class CartController : Controller
         }
 
         var cartItems = _cartItemDal.GetCartItemsByCartId(cart.Id);
-        
+
         // Kullanıcının kayıtlı adreslerini getir
         var addresses = _addressDal.GetAddressesByUserId(user.Id);
         ViewBag.Addresses = new SelectList(addresses, "Id", "Title");
@@ -217,7 +217,7 @@ public class CartController : Controller
     [HttpPost]
     public async Task<IActionResult> Checkout(ShippingDetails details)
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true)
         {
             return RedirectToAction("Login", "Account");
         }
@@ -248,10 +248,10 @@ public class CartController : Controller
             var product = _productDal.Get(item.ProductId);
             if (product == null || product.Stock < item.Quantity)
             {
-                string errorMessage = product == null 
-                    ? "Sepetinizdeki bazı ürünler artık mevcut değil" 
+                string errorMessage = product == null
+                    ? "Sepetinizdeki bazı ürünler artık mevcut değil"
                     : $"'{product.Name}' için yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}, Sepetteki adet: {item.Quantity}";
-                
+
                 TempData["Error"] = errorMessage;
                 return RedirectToAction("Index");
             }
@@ -288,7 +288,7 @@ public class CartController : Controller
             try
             {
                 SaveOrder(cartItems, details);
-                
+
                 // Sepeti temizle
                 _cartDal.ClearCart(cart.Id);
                 SessionHelper.Count = 0;
@@ -347,27 +347,27 @@ public class CartController : Controller
                 {
                     throw new InvalidOperationException($"Ürün '{product.Name}' için yeterli stok bulunmamaktadır. Mevcut stok: {product.Stock}, Sepetteki adet: {item.Quantity}");
                 }
-                
+
                 // Ürün stoğunu azalt
                 product.Stock -= item.Quantity;
                 _productDal.Update(product);
-                
+
                 // Stok sıfır olduğunda ürünü deaktif et (soft delete)
                 if (product.Stock <= 0)
                 {
                     _productDal.CheckAndDeactivateProduct(product.ProductId);
                 }
             }
-            
+
             var orderLine = new OrderLine();
             orderLine.Quantity = item.Quantity;
             orderLine.ProductId = item.ProductId;
             orderLine.Price = item.Product.Price * item.Quantity;
-            
+
             // Ürün bilgilerini kaydet, böylece ürün silinse bile sipariş detaylarında görünecek
             orderLine.ProductName = item.Product.Name;
             orderLine.ProductImage = item.Product.Image;
-            
+
             order.OrderLines.Add(orderLine);
         }
 
@@ -376,7 +376,7 @@ public class CartController : Controller
 
     public async Task<IActionResult> RemoveAll(int id) // Parametre adı 'id' ama aslında ProductId
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true) // Null kontrolü eklendi
         {
             return RedirectToAction("Login", "Account");
         }

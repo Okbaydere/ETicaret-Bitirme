@@ -1,9 +1,7 @@
-using Business.Abstract;
 using Business.Concrete;
 using Dal.Abstract;
 using Data.Context;
 using Data.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Dal.Concrete;
 

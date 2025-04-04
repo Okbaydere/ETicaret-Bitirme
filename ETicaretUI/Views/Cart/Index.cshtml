@@ -8,7 +8,7 @@
 
     if (hasItems)
     {
-        total = Model.Sum(i => i.Product.Price * i.Quantity);
+        total = (Model ?? Enumerable.Empty<Data.Entities.CartItem>()).Sum(i => (i.Product?.Price ?? 0) * i.Quantity);
     }
 }
 
@@ -23,7 +23,7 @@
     <!-- Sepet Başlığı -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold"><i class="fas fa-shopping-cart me-2 text-primary"></i> Alışveriş Sepetim</h2>
-        <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">@(hasItems ? Model.Count() : 0) Ürün</span>
+        <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">@(hasItems ? (Model ?? Enumerable.Empty<Data.Entities.CartItem>()).Count() : 0) Ürün</span>
     </div>
 
     <div class="row g-4">
@@ -61,13 +61,15 @@
                                 <tbody>
                                     @foreach (var item in Model)
                                     {
+                                        @if (item == null) { continue; }
                                         <tr class="border-bottom">
                                             <td class="ps-4 py-3">
                                                 <div class="d-flex align-items-center">
-                                                    @if (!string.IsNullOrEmpty(item.Product.Image))
+                                                    @if (item.Product != null && !string.IsNullOrEmpty(item.Product.Image))
                                                     {
+                                                        var product = item.Product;
                                                         <div class="rounded-3 overflow-hidden border me-3" style="width: 70px; height: 70px;">
-                                                            <img src="@item.Product.Image" alt="@item.Product.Name" class="w-100 h-100" style="object-fit: cover;">
+                                                            <img src="@product.Image" alt="@product.Name" class="w-100 h-100" style="object-fit: cover;" onerror="this.onerror=null; this.src='/img/product-placeholder.jpg';" />
                                                         </div>
                                                     }
                                                     else
@@ -77,8 +79,8 @@
                                                         </div>
                                                     }
                                                     <div>
-                                                        <h6 class="mb-1 fw-bold">@item.Product.Name</h6>
-                                                        @if (item.Product.Category != null)
+                                                        <h6 class="mb-1 fw-bold">@(item.Product?.Name ?? "Ürün Bulunamadı")</h6>
+                                                        @if (item.Product?.Category != null)
                                                         {
                                                             <span class="badge bg-light text-dark">
                                                                 <i class="fas fa-tag me-1"></i> @item.Product.Category.CategoryName
@@ -87,7 +89,7 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="fw-bold py-3">@item.Product.Price.ToString("c")</td>
+                                            <td class="fw-bold py-3">@(item.Product?.Price.ToString("c") ?? "-")</td>
                                             <td class="py-3">
                                                 <div class="d-flex align-items-center quantity-control">
                                                     <a href="@Url.Action("Delete", "Cart", new { id = item.ProductId })" 
@@ -102,7 +104,7 @@
                                                 </div>
                                             </td>
                                             <td class="fw-bold text-primary py-3">
-                                                @((item.Product.Price * item.Quantity).ToString("c"))
+                                                @(( (item.Product?.Price ?? 0) * item.Quantity).ToString("c"))
                                             </td>
                                             <td class="text-end pe-4 py-3">
                                                 <a href="@Url.Action("RemoveAll", "Cart", new { id = item.ProductId })"
@@ -136,7 +138,7 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between mb-3">
-                            <span class="text-muted">Ürünler (@Model.Count())</span>
+                            <span class="text-muted">Ürünler (@((Model ?? Enumerable.Empty<Data.Entities.CartItem>()).Count()))</span>
                             <span>@total.ToString("c")</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">

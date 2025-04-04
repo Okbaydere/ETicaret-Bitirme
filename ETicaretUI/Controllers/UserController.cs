@@ -1,10 +1,9 @@
+using Dal.Abstract;
 using Data.Identity;
 using Data.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Dal.Abstract;
-using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
@@ -144,12 +143,12 @@ public class UserController : Controller
     public async Task<IActionResult> Delete(int id)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
-        
+
         if (user == null || !user.IsActive)
         {
             return NotFound($"Kullanıcı bulunamadı. ID: {id}");
         }
-        
+
         return View(user);
     }
 
@@ -157,12 +156,12 @@ public class UserController : Controller
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
-        
+
         if (user == null)
         {
             return NotFound($"Kullanıcı bulunamadı. ID: {id}");
         }
-        
+
         // Admin mi kontrol et
         var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
         if (isAdmin)
@@ -170,30 +169,30 @@ public class UserController : Controller
             TempData["ErrorMessage"] = "Admin kullanıcısı silinemez.";
             return RedirectToAction("Index");
         }
-        
+
         // Kullanıcının siparişleri var mı kontrol et (DAL üzerinden)
         var hasOrders = _orderDal.GetAll(o => o.UserName == user.UserName).Any();
-        
+
         try
         {
             // Soft Delete - IsActive'i false yap
             user.IsActive = false;
             user.DeletedAt = DateTime.Now;
-            
+
             var result = await _userManager.UpdateAsync(user);
-            
+
             if (result.Succeeded)
             {
-                TempData["SuccessMessage"] = "Kullanıcı başarıyla pasife alındı." + 
+                TempData["SuccessMessage"] = "Kullanıcı başarıyla pasife alındı." +
                     (hasOrders ? " Not: Kullanıcının siparişleri olduğu için tamamen silinmedi." : "");
                 return RedirectToAction("Index");
             }
-            
+
             foreach (var error in result.Errors)
             {
                 TempData["ErrorMessage"] += error.Description + " ";
             }
-            
+
             return RedirectToAction("Index");
         }
         catch (Exception ex)

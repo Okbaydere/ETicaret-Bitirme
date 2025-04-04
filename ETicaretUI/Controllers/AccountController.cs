@@ -39,7 +39,7 @@ public class AccountController : Controller
 
     public IActionResult Login()
     {
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
         }
@@ -50,7 +50,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Login(LoginViewModel model)
     {
         // Giriş yapmış kullanıcıyı kontrol et
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
         }
@@ -106,7 +106,7 @@ public class AccountController : Controller
             if (result.Succeeded)
             {
                 // Session'daki sepeti kullanıcının veritabanı sepetine aktar
-                await MergeCartWithDatabase(user.Id);
+                MergeCartWithDatabase(user.Id);
 
                 // Başarılı giriş sonrası her zaman ana sayfaya yönlendir
                 return RedirectToAction("Index", "Home");
@@ -138,7 +138,7 @@ public class AccountController : Controller
 
     // Kullanıcı giriş yaptığında, Session'daki sepeti veritabanındaki sepetle birleştirir
     // Yani kullanıcı giriş yapmadan sepete eklediklerini, giriş yaptığında veritabanındaki sepete ekler
-    private async Task MergeCartWithDatabase(int userId)
+    private void MergeCartWithDatabase(int userId)
     {
         // Session'da sepet var mı kontrol et
         var sessionCart = SessionHelper.GetObjectFromJson<List<CartItem>>(HttpContext.Session, "Card");
@@ -158,7 +158,7 @@ public class AccountController : Controller
         var cart = _cartDal.GetCartByUserId(userId);
         if (cart == null)
         {
-        
+
             cart = new Cart
             {
                 UserId = userId,
@@ -201,7 +201,7 @@ public class AccountController : Controller
 
     public async Task<IActionResult> Index()
     {
-        if (!User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated != true)
         {
             return RedirectToAction("Login");
         }
@@ -214,26 +214,26 @@ public class AccountController : Controller
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        
+
         // Kullanıcının sipariş sayısını al
         var orders = _orderDal.GetAll(o => o.UserName == user.UserName)
             .OrderByDescending(o => o.OrderDate)
             .ToList();
-        
+
         // Son 2 siparişi al
         var recentOrders = orders.Take(2).ToList();
-        
+
         // Kullanıcının adres sayısını al
         var addresses = _addressDal.GetAddressesByUserId(user.Id);
         var addressCount = addresses.Count;
 
         var model = new UserProfileViewModel
         {
-            UserName = user.UserName,
-            Email = user.Email,
+            UserName = user.UserName ?? string.Empty,
+            Email = user.Email ?? string.Empty,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            PhoneNumber = user.PhoneNumber,
+            PhoneNumber = user.PhoneNumber ?? string.Empty,
             Roles = roles.ToList(),
             AddressCount = addressCount,
             OrderCount = orders.Count,
@@ -249,7 +249,7 @@ public class AccountController : Controller
 
     public IActionResult Register()
     {
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToAction("Index", "Home");
         }
@@ -279,7 +279,7 @@ public class AccountController : Controller
                 await _signInManager.SignInAsync(user, isPersistent: false);
 
                 // Yeni kullanıcı için sepet oluştur
-                await MergeCartWithDatabase(user.Id);
+                MergeCartWithDatabase(user.Id);
 
                 return RedirectToAction("Index", "Home");
             }
@@ -309,7 +309,7 @@ public class AccountController : Controller
         return View("AccessDenied");
     }
 
-    [Authorize] 
+    [Authorize]
     public async Task<IActionResult> GetOrders()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -363,7 +363,7 @@ public class AccountController : Controller
 
         user.FirstName = model.FirstName;
         user.LastName = model.LastName;
-        
+
         // Email değişmişse güncelleme yap
         if (user.Email != model.Email)
         {
@@ -377,7 +377,7 @@ public class AccountController : Controller
                 return View(model);
             }
         }
-        
+
         // Telefon numarası değişmişse güncelleme yap
         if (user.PhoneNumber != model.PhoneNumber)
         {

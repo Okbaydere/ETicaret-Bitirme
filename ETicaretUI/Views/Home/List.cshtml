@@ -59,7 +59,7 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="category-list">
-                        @Html.Partial("_GetCategoryList", Model.Categories)
+                        <partial name="_GetCategoryList" model="Model.Categories" />
                     </div>
                 </div>
             </div>
@@ -181,7 +181,7 @@
 
             <!-- Ürün Kartları -->
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                @Html.Partial("_ProductList", Model.Products)
+                <partial name="_ProductList" model="Model.Products" />
             </div>
 
             <!-- Pagination -->

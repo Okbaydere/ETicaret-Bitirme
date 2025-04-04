@@ -1,7 +1,5 @@
-using Data.Context;
 using Data.Identity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace ETicaretUI.SeedData
 {
@@ -11,14 +9,14 @@ namespace ETicaretUI.SeedData
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<AppRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
-            
+
             // Rolleri oluştur
             await CreateRolesAsync(roleManager);
-            
+
             // Kullanıcıları oluştur
             await CreateUsersAsync(userManager);
         }
-        
+
         private static async Task CreateRolesAsync(RoleManager<AppRole> roleManager)
         {
             // Admin rolü
@@ -27,7 +25,7 @@ namespace ETicaretUI.SeedData
                 var adminRole = new AppRole { Name = "Admin" };
                 await roleManager.CreateAsync(adminRole);
             }
-            
+
             // Normal kullanıcı rolü
             if (!await roleManager.RoleExistsAsync("User"))
             {
@@ -35,7 +33,7 @@ namespace ETicaretUI.SeedData
                 await roleManager.CreateAsync(userRole);
             }
         }
-        
+
         private static async Task CreateUsersAsync(UserManager<AppUser> userManager)
         {
             // Admin kullanıcısı
@@ -48,15 +46,15 @@ namespace ETicaretUI.SeedData
                     FirstName = "Admin",
                     LastName = "User"
                 };
-                
+
                 var result = await userManager.CreateAsync(adminUser, "admin123");
-                
+
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
                 }
             }
-            
+
             // Normal kullanıcı
             if (await userManager.FindByNameAsync("normal") == null)
             {
@@ -67,9 +65,9 @@ namespace ETicaretUI.SeedData
                     FirstName = "Normal",
                     LastName = "User"
                 };
-                
+
                 var result = await userManager.CreateAsync(normalUser, "normal123");
-                
+
                 if (result.Succeeded)
                 {
                     await userManager.AddToRoleAsync(normalUser, "User");
@@ -77,4 +75,4 @@ namespace ETicaretUI.SeedData
             }
         }
     }
-} 
+}

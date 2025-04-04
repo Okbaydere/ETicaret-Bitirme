@@ -1,11 +1,8 @@
 using Dal.Abstract;
-using Data.Context;
 using Data.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
@@ -28,7 +25,7 @@ public class ProductController : Controller
                                  .OrderByDescending(p => p.IsActive)
                                  .ThenBy(p => p.Name)
                                  .ToList();
-            
+
         return View(products);
     }
 
@@ -111,7 +108,7 @@ public class ProductController : Controller
         var product = _productDal.Get(id.Value);
         if (product == null)
         {
-             return NotFound();
+            return NotFound();
         }
 
         return View(product);

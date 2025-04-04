@@ -3,7 +3,6 @@ using Data.Entities;
 using ETicaretUI.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace ETicaretUI.Controllers;
 
@@ -32,7 +31,7 @@ public class CategoryController : Controller
             {
                 Id = category.Id,
                 CategoryName = category.CategoryName,
-                Description = category.Description,
+                Description = category.Description ?? string.Empty,
                 ProductCount = productCount,
                 IsActive = category.IsActive
             });
@@ -105,7 +104,7 @@ public class CategoryController : Controller
             existingCategory.CategoryName = category.CategoryName;
             existingCategory.Description = category.Description;
             existingCategory.IsActive = category.IsActive;
-            
+
             _categoryDal.Update(existingCategory);
             TempData["SuccessMessage"] = $"{category.CategoryName} kategorisi başarıyla güncellendi.";
             return RedirectToAction(nameof(Index));

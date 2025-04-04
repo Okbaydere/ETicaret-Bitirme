@@ -154,7 +154,7 @@
                             </a>
                         </li>
 
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -201,7 +201,7 @@
                             </a>
                         </li>
 
-                        @if (!User.Identity.IsAuthenticated)
+                        @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item d-lg-inline-block">
                                 <a asp-action="Login" asp-controller="Account" class="nav-link btn btn-outline-primary me-2">
@@ -218,7 +218,7 @@
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user-circle me-1"></i> @User.Identity.Name
+                                    <i class="fas fa-user-circle me-1"></i> @User.Identity?.Name
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
                                     <li>

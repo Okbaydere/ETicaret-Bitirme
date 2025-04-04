@@ -1,15 +1,15 @@
-using System.Linq.Expressions;
 using Business.Abstract;
 using Data.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Business.Concrete;
 
 // new() kısıtlaması kaldırıldı
-public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity> 
+public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
     where Tentity : class, new()
-    where Tcontext : IdentityDbContext<AppUser, AppRole, int> 
+    where Tcontext : IdentityDbContext<AppUser, AppRole, int>
 {
     // Context field'ı eklendi
     protected readonly Tcontext _context;
@@ -22,7 +22,7 @@ public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
 
     // CreateContext metodu kaldırıldı
 
-    public List<Tentity> GetAll(Expression<Func<Tentity, bool>> filter = null)
+    public List<Tentity> GetAll(Expression<Func<Tentity, bool>>? filter = null)
     {
         // using bloğu kaldırıldı, _context kullanılıyor
         // Default olarak IsActive=true olan kayıtları getir
@@ -38,24 +38,24 @@ public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
             var trueValue = Expression.Constant(true);
             var condition = Expression.Equal(property, trueValue);
             var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
-            
+
             query = query.Where(lambda);
         }
-        
+
         // diğer filtreler için 
         if (filter != null)
         {
             query = query.Where(filter);
         }
-        
+
         return query.ToList();
     }
 
-    public Tentity Get(int id)
+    public Tentity? Get(int id)
     {
         // using bloğu kaldırıldı, _context kullanılıyor
         var nesne = _context.Set<Tentity>().Find(id);
-        
+
         // Eğer Tentity sınıfında IsActive property'si varsa ve false ise null dön
         if (nesne != null)
         {
@@ -70,16 +70,16 @@ public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
                 }
             }
         }
-        
+
         return nesne;
     }
 
-    public Tentity Get(Expression<Func<Tentity, bool>> filter)
+    public Tentity? Get(Expression<Func<Tentity, bool>>? filter)
     {
         // using bloğu kaldırıldı, _context kullanılıyor
         // Default olarak IsActive=true olan kayıtları getir
         var query = _context.Set<Tentity>().AsQueryable();
-        
+
         // Eğer Tentity sınıfında IsActive property'si varsa, filtreleme yap
         var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
         if (isActiveProperty != null)
@@ -89,12 +89,13 @@ public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
             var trueValue = Expression.Constant(true);
             var condition = Expression.Equal(property, trueValue);
             var lambda = Expression.Lambda<Func<Tentity, bool>>(condition, parameter);
-            
+
             query = query.Where(lambda);
         }
-        
+
         // Belirtilen filtreyi de uygula
-        var nesne = query.FirstOrDefault(filter);
+        // 'filter' null ise FirstOrDefault predicate olmadan çağrılır
+        var nesne = filter == null ? query.FirstOrDefault() : query.FirstOrDefault(filter);
         return nesne;
     }
 
@@ -118,7 +119,7 @@ public class GenericRepository<Tentity, Tcontext> : IGenericRepository<Tentity>
         var isActiveProperty = typeof(Tentity).GetProperty("IsActive");
         if (isActiveProperty != null)
         {
-             // Entity'nin state'ini değiştirmeden önce context'e attach etmek gerekebilir
+            // Entity'nin state'ini değiştirmeden önce context'e attach etmek gerekebilir
             var entry = _context.Entry(tentity);
             if (entry.State == EntityState.Detached)
             {

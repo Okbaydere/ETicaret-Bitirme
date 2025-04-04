@@ -4,7 +4,7 @@ using Data.Entities;
 namespace Dal.Abstract;
 
 
-public interface IOrderLineDal:IGenericRepository<OrderLine>
+public interface IOrderLineDal : IGenericRepository<OrderLine>
 {
-    
+
 }

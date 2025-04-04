@@ -71,14 +71,14 @@ public class AddressController : Controller
 
             // Kaydet
             _addressDal.Add(address);
-            
+
             // Eğer varsayılan adres olarak işaretlendiyse, SetDefaultAddress metodunu çağır
             // Bu, diğer tüm adreslerin IsDefault değerini false yapacak
             if (address.IsDefault)
             {
                 _addressDal.SetDefaultAddress(address.Id, user.Id);
             }
-            
+
             return RedirectToAction("Index");
         }
         catch (Exception ex)

@@ -24,20 +24,18 @@
                             _ => "bg-secondary"
                     };
 
-                    string displayName = Model.OrderState.ToString();
-
                     // Display attribute kullanarak enum adını alalım
                     var orderStateType = typeof(EnumOrderState);
                     var memberInfo = orderStateType.GetMember(Model.OrderState.ToString()).FirstOrDefault();
+                    string? displayName = null; // Nullable yapıldı ve başlangıç değeri atandı
                     if (memberInfo != null)
                     {
-                        var displayAttribute = (DisplayAttribute)
+                        var displayAttribute = (DisplayAttribute?)
                                 Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute));
-                        if (displayAttribute != null)
-                        {
-                            displayName = displayAttribute.Name;
-                        }
+                        displayName = displayAttribute?.Name ?? Model.OrderState.ToString(); // Null kontrolü ile atama
                     }
+                    // Eğer displayName hala null ise (memberInfo bulunamadıysa), varsayılanı kullan
+                    displayName ??= Model.OrderState.ToString();
                 }
                 <span class="badge @badgeClass">@displayName</span>
             </div>

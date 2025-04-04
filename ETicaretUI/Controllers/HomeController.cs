@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using Dal.Abstract;
+﻿using Dal.Abstract;
 using Data.ViewModels;
 using ETicaretUI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ETicaretUI.Controllers;
 
@@ -28,7 +27,7 @@ public class HomeController : Controller
     {
         // Stok sıfır olan ürünleri deaktif et
         _productDal.DeactivateOutOfStockProducts();
-        
+
         // Sadece aktif, anasayfada gösterilecek ve onaylı ürünleri getir
         var product = _productDal.GetAll(x => x.IsHome && x.IsApproved);
         return View(product);
@@ -38,7 +37,7 @@ public class HomeController : Controller
     {
         // Stok sıfır olan ürünleri deaktif et
         _productDal.DeactivateOutOfStockProducts();
-        
+
         // Açıkça id=null geldiyse (Tüm Kategoriler linki ile), kategori filtresini temizle
         ViewBag.Id = id;
         ViewBag.CurrentSortOrder = sortOrder;

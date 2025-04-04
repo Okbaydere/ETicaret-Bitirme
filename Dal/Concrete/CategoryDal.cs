@@ -3,7 +3,6 @@ using Dal.Abstract;
 using Data.Context;
 using Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace Dal.Concrete;
 

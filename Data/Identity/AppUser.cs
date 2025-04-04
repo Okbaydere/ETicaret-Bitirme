@@ -17,8 +17,8 @@ public class AppUser : IdentityUser<int>
         IsActive = true;
     }
 
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true; // Soft delete için
     public DateTime? DeletedAt { get; set; }
 

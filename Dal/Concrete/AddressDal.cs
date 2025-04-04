@@ -21,7 +21,7 @@ public class AddressDal : GenericRepository<Address, ETicaretContext>, IAddressD
             .ToList();
     }
 
-    public Address GetDefaultAddress(int userId)
+    public Address? GetDefaultAddress(int userId)
     {
         return _context.Addresses
             .FirstOrDefault(a => a.UserId == userId && a.IsDefault);
@@ -30,16 +30,16 @@ public class AddressDal : GenericRepository<Address, ETicaretContext>, IAddressD
     public void SetDefaultAddress(int addressId, int userId)
     {
         using var transaction = _context.Database.BeginTransaction();
-        
+
         try
         {
             _context.Database.ExecuteSqlRaw(
                 "UPDATE Addresses SET IsDefault = 0 WHERE UserId = {0}", userId);
-            
+
             _context.Database.ExecuteSqlRaw(
-                "UPDATE Addresses SET IsDefault = 1 WHERE Id = {0} AND UserId = {1}", 
+                "UPDATE Addresses SET IsDefault = 1 WHERE Id = {0} AND UserId = {1}",
                 addressId, userId);
-            
+
             transaction.Commit();
         }
         catch

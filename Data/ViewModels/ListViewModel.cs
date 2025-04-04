@@ -7,7 +7,7 @@ public class ListViewModel
     public List<Product> Products { get; set; }
     public List<Category> Categories { get; set; }
 
-    // Sayfalama özellikleri
+    // Sayfalama ï¿½zellikleri
     public int TotalItems { get; set; }
     public int CurrentPage { get; set; }
     public int TotalPages { get; set; }
@@ -21,5 +21,6 @@ public class ListViewModel
     public ListViewModel()
     {
         Products = new List<Product>();
+        Categories = new List<Category>();
     }
 }

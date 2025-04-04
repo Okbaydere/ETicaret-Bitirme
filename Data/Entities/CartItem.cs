@@ -10,14 +10,14 @@ public class CartItem
 
     [Required] public int CartId { get; set; }
 
-    public virtual Cart Cart { get; set; }
+    public virtual Cart Cart { get; set; } = null!;
 
     [Required] public int ProductId { get; set; }
 
-    public virtual Product Product { get; set; }
+    public virtual Product Product { get; set; } = null!;
 
     public DateTime DateAdded { get; set; }
-    
+
     public bool IsActive { get; set; } = true;
 
     public CartItem()

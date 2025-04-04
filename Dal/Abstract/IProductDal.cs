@@ -3,7 +3,7 @@ using Data.Entities;
 
 namespace Dal.Abstract;
 
-public interface IProductDal:IGenericRepository<Product>
+public interface IProductDal : IGenericRepository<Product>
 {
     void DeactivateOutOfStockProducts();
     void CheckAndDeactivateProduct(int productId);
