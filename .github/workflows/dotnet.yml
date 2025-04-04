@@ -1,0 +1,30 @@
+name: .NET Core CI
+
+on:
+  push:
+    branches: [ main ] # main dalına push yapıldığında çalışır
+  pull_request:
+    branches: [ main ] # main dalına PR açıldığında/güncellendiğinde çalışır
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest # Linux runner kullan
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Checkout action'ının güncel sürümü
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '7.0.x' # Projenin .NET sürümünü kontrol etmek iyi olur ama 7.0.x genellikle uyumludur
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal 
