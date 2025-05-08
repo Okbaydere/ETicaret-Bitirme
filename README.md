@@ -114,7 +114,6 @@ Normal kullanıcı olarak:
    dotnet run --project ETicaretUI
    ```
 
-4. Web tarayıcınızda `https://localhost:5001` adresine gidin
 
 ## Veritabanı Modeli
 
@@ -138,7 +137,7 @@ Proje aşağıdaki ana varlık modellerini içerir:
 ### Sepet Sayfası
 ![Sepet](screenshots/cart.png)
 
-### Admin Paneli
+### Admin Panelinden Bir örnek
 ![Admin Panel](screenshots/admin-panel.png)
 
 ## Geliştirme Süreci
