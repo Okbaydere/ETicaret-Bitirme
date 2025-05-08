@@ -131,8 +131,6 @@ Proje aşağıdaki ana varlık modellerini içerir:
 ### Anasayfa ve Ürün Listesi
 ![Anasayfa](screenshots/home.png)
 
-### Ürün Detay Sayfası
-![Ürün Detayı](screenshots/product-detail.png)
 
 ### Sepet Sayfası
 ![Sepet](screenshots/cart.png)
